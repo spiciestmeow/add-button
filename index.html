@@ -3,44 +3,39 @@
 <head>
 <title>Page Title</title>
 <style>
-/* Container styling */
+/* Container styling stays the same, or matches the new mood */
 .card {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background-color: #f4f6f9; /* Light grey/blue background */
-  border: 1px solid #e0e4e9;
+  background-color: #f8fafc; 
+  border: 1px solid #e2e8f0;
   border-radius: 12px;
-  padding: 40px;
+  padding: 40px 60px;
   text-align: center;
   max-width: 500px;
   margin: 20px auto;
 }
 
-/* Text styling */
-.instruction {
-  color: #5a6b7d; /* Muted slate color */
-  font-size: 16px;
-  margin-bottom: 24px;
-}
-
-/* Button styling */
+/* Updated Button with #50946E */
 .btn {
-  background-color: #50946E; /* Bright red */
+  background-color: #50946E; /* Your new custom color */
   color: white;
   border: none;
   border-radius: 12px;
   padding: 14px 32px;
   font-size: 18px;
-  font-weight: bold;
+  font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  transition: all 0.3s ease;
   
-  /* Soft shadow to match the image */
-  box-shadow: 0 4px 15px rgba(217, 35, 35, 0.3);
+  /* Adjusted shadow to match #50946E with 30% opacity */
+  box-shadow: 0 4px 15px rgba(80, 148, 110, 0.3);
 }
 
-/* Hover effect for better UX */
+/* Hover state for the new color */
 .btn:hover {
-  background-color: #b31d1d;
+  background-color: #437d5d; /* Slightly darker shade for feedback */
+  transform: translateY(-1px); /* Adds a nice subtle lift */
+  box-shadow: 0 6px 20px rgba(80, 148, 110, 0.4);
 }
 </style>
 </head>
