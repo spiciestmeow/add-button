@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <style>
-        /* Base page background logic */
         :root { --page-bg: #ffffff; }
         @media (prefers-color-scheme: dark) { :root { --page-bg: #191919; } }
 
@@ -19,69 +18,71 @@
             margin: 0;
         }
 
-        /* Basic Card Style (Fixed at 400px wide) */
         .card {
             background-color: #f8fafc;
             border: 1px solid #e2e8f0;
             border-radius: 12px;
-            padding: 40px;
-            width: 400px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-            position: relative; /* Essential for positioning absolute elements */
-        }
-
-        /* This rule completely hides an element */
-        .hidden { display: none !important; }
-
-        /* Permanent Instruction Text */
-        .instruction {
-            color: #64748b;
-            font-size: 16px;
-            margin-bottom: 24px;
-            margin-top: 0;
+            padding: 30px 40px;
+            width: 360px; /* Slightly slimmer card */
+            box-shadow: 0 4px 20px rgba(0,0,0,0.06);
             text-align: center;
         }
 
-        /* VIEW 1: Initial Button (Stays centered) */
-        .initial-view { text-align: center; }
+        .hidden { display: none !important; }
 
+        /* Instruction Text - Always Visible */
+        .instruction {
+            color: #64748b;
+            font-size: 14px; /* Smaller font */
+            margin-bottom: 20px;
+            margin-top: 0;
+        }
+
+        /* VIEW 1: Button */
         .btn {
-            background-color: #50946E; /* Your custom green */
-            color: #ffffff; border: none; padding: 14px 34px;
-            border-radius: 10px; font-weight: 600; cursor: pointer;
-            transition: all 0.2s ease-in-out;
-            box-shadow: 0 4px 12px rgba(80, 148, 110, 0.35);
+            background-color: #50946E;
+            color: #ffffff; border: none; padding: 12px 28px;
+            border-radius: 10px; font-weight: 600; font-size: 15px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(80, 148, 110, 0.3);
         }
 
-        /* VIEW 2: Timer Styles (Aligned in a column) */
-        .timer-view {
-            display: flex; flex-direction: column; align-items: center; text-align: center;
+        /* VIEW 2: Timer - Scaled Down */
+        .timer-icon { color: #50946E; font-size: 20px; margin-bottom: 8px; }
+        .timer-label { color: #64748b; font-size: 13px; margin: 0; }
+        .countdown-text { 
+            font-size: 32px; /* Reduced from 48px */
+            font-weight: 700; 
+            margin: 5px 0; 
+            color: #1e293b; 
         }
-
-        /* Clock Icon - Now Green */
-        .timer-icon { color: #50946E; font-size: 28px; margin-bottom: 12px; }
-
-        /* Countdown Number (Large and Bold) */
-        .countdown-text { font-size: 48px; font-weight: bold; margin: 10px 0; color: #1e293b; }
-
-        /* Progress Bar Container */
         .progress-bar {
-            height: 4px; background: #e2e8f0; border-radius: 2px;
-            width: 70%; margin-top: 24px; overflow: hidden; position: relative;
+            height: 3px; background: #e2e8f0; border-radius: 2px;
+            width: 60%; margin: 15px auto 0; overflow: hidden; position: relative;
         }
-
-        /* Progress Fill - Now Green, filling over 10s */
         .progress-fill {
             position: absolute; height: 100%; background: #50946E;
             width: 100%; left: -100%; transition: left 10s linear;
         }
 
-        /* VIEW 3: Credentials Styles */
-        .cred-header { text-align: left; font-size: 12px; font-weight: bold; color: #64748b; margin-bottom: 15px; text-transform: uppercase; }
-        .cred-box { background: #f1f5f9; padding: 15px; border-radius: 10px; margin-bottom: 10px; text-align: left; position: relative; }
-        .label { font-size: 10px; color: #94a3b8; font-weight: bold; text-transform: uppercase; margin-bottom: 5px; }
-        .value { font-size: 16px; color: #1e293b; font-family: monospace; }
-        .copy-icon { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: #94a3b8; cursor: pointer; }
+        /* VIEW 3: Credentials - Scaled Down */
+        .cred-header { 
+            text-align: left; font-size: 11px; font-weight: 700; 
+            color: #94a3b8; margin-bottom: 12px; text-transform: uppercase; 
+            letter-spacing: 0.5px;
+        }
+        .cred-box { 
+            background: #f1f5f9; padding: 12px 15px; 
+            border-radius: 8px; margin-bottom: 8px; 
+            text-align: left; position: relative; 
+        }
+        .label { font-size: 9px; color: #94a3b8; font-weight: 700; text-transform: uppercase; margin-bottom: 2px; }
+        .value { font-size: 14px; color: #334155; font-family: 'Courier New', Courier, monospace; font-weight: 600; }
+        .copy-icon { 
+            position: absolute; right: 15px; top: 50%; 
+            transform: translateY(-50%); color: #cbd5e1; 
+            font-size: 14px; cursor: pointer; 
+        }
     </style>
 </head>
 <body>
@@ -89,13 +90,13 @@
     <div class="card">
         <p class="instruction">Click below to unlock account details</p>
 
-        <div id="view-initial" class="initial-view">
+        <div id="view-initial">
             <button class="btn" onclick="startUnlock()">Get Account</button>
         </div>
 
-        <div id="view-timer" class="timer-view hidden">
+        <div id="view-timer" class="hidden">
             <div class="timer-icon"><i class="fa-regular fa-clock"></i></div>
-            <p style="color:#64748b; font-size:14px; margin:0;">Unlocking in</p>
+            <p class="timer-label">Unlocking in</p>
             <div id="timer-num" class="countdown-text">10</div>
             <div class="progress-bar"><div id="fill" class="progress-fill"></div></div>
         </div>
@@ -117,33 +118,24 @@
 
     <script>
         function startUnlock() {
-            // Hide View 1, Show View 2 (Timer)
             document.getElementById('view-initial').classList.add('hidden');
             document.getElementById('view-timer').classList.remove('hidden');
-            
-            // Start the loading bar animation (delayed slightly for stability)
             setTimeout(() => { document.getElementById('fill').style.left = '0'; }, 50);
 
             let timeLeft = 10;
             const timerDisplay = document.getElementById('timer-num');
-
-            // Set the countdown interval
             const countdown = setInterval(() => {
                 timeLeft--;
                 timerDisplay.innerText = timeLeft;
-
-                // When timer hits 0
                 if (timeLeft <= 0) {
-                    clearInterval(countdown); // Stop the loop
-                    showCredentials();       // Switch to the final view
+                    clearInterval(countdown);
+                    showCredentials();
                 }
-            }, 1000); // 1000ms = 1 second
+            }, 1000);
         }
 
         function showCredentials() {
-            // Hide the Timer View entirely
             document.getElementById('view-timer').classList.add('hidden');
-            // Show the Credentials View
             document.getElementById('view-creds').classList.remove('hidden');
         }
     </script>
