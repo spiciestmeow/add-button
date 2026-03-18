@@ -25,6 +25,7 @@
             padding: 30px 40px;
             width: 340px;
             text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.06);
         }
 
         .hidden { display: none !important; }
@@ -36,13 +37,20 @@
             color: #ffffff; border: none; padding: 12px 28px;
             border-radius: 10px; font-weight: 600; font-size: 15px;
             cursor: pointer;
+            transition: transform 0.1s;
         }
+        .btn:active { transform: scale(0.98); }
 
         /* Timer View */
         .timer-icon { color: #50946E; font-size: 20px; margin-bottom: 8px; }
+        .timer-label { color: #64748b; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
         .countdown-text { font-size: 32px; font-weight: 700; margin: 5px 0; color: #1e293b; }
-        .progress-bar { height: 3px; background: #e2e8f0; width: 60%; margin: 15px auto 0; position: relative; overflow: hidden; }
-        .progress-fill { position: absolute; height: 100%; background: #50946E; width: 100%; left: -100%; transition: left 10s linear; }
+        
+        .progress-bar { height: 3px; background: #e2e8f0; width: 60%; margin: 15px auto 0; position: relative; overflow: hidden; border-radius: 2px; }
+        .progress-fill { 
+            position: absolute; height: 100%; background: #50946E; width: 100%; left: -100%; 
+            transition: left 10s cubic-bezier(0.65, 0, 0.35, 1); /* Realistic loading curve */
+        }
 
         /* Credentials View */
         .cred-header { text-align: left; font-size: 11px; font-weight: 700; color: #94a3b8; margin-bottom: 12px; text-transform: uppercase; }
@@ -51,7 +59,7 @@
             border-radius: 8px; margin-bottom: 8px; 
             text-align: left; position: relative; 
             cursor: pointer; 
-            user-select: none; /* Prevents accidental text highlighting */
+            user-select: none;
         }
         .cred-box:active { background: #e2e8f0; }
         .label { font-size: 9px; color: #94a3b8; font-weight: 700; text-transform: uppercase; margin-bottom: 2px; }
@@ -67,21 +75,22 @@
         <div id="view-initial"><button class="btn" onclick="startUnlock()">Get Account</button></div>
 
         <div id="view-timer" class="hidden">
-            <div class="timer-icon"><i class="fa-regular fa-clock"></i></div>
+            <div id="timer-status-icon" class="timer-icon"><i class="fa-regular fa-clock"></i></div>
+            <div id="status-text" class="timer-label">Connecting...</div>
             <div id="timer-num" class="countdown-text">10</div>
             <div class="progress-bar"><div id="fill" class="progress-fill"></div></div>
         </div>
 
         <div id="view-creds" class="hidden">
-            <div class="cred-header">Credentials</div>
+            <div class="cred-header">Credentials Unlocked</div>
             
-            <div class="cred-box" onclick="smartCopy('63813714', this)">
-                <div class="label">Email</div>
+            <div class="cred-box" onclick="smartCopy(this)">
+                <div class="label">Email / User</div>
                 <div class="value">63813714</div>
                 <i class="fa-regular fa-copy copy-icon"></i>
             </div>
 
-            <div class="cred-box" onclick="smartCopy('92013398', this)">
+            <div class="cred-box" onclick="smartCopy(this)">
                 <div class="label">Password</div>
                 <div class="value">92013398</div>
                 <i class="fa-regular fa-copy copy-icon"></i>
@@ -93,16 +102,42 @@
         function startUnlock() {
             document.getElementById('view-initial').classList.add('hidden');
             document.getElementById('view-timer').classList.remove('hidden');
+            
+            // Start progress bar animation
             setTimeout(() => { document.getElementById('fill').style.left = '0'; }, 50);
+
+            const statusLabel = document.getElementById('status-text');
+            const statusIcon = document.getElementById('timer-status-icon');
+            
+            // Realistic Status Messages
+            const messages = [
+                "Locating available account...",
+                "Bypassing Steam Guard...",
+                "Fetching session keys...",
+                "Decrypting credentials...",
+                "Finalizing access..."
+            ];
 
             let timeLeft = 10;
             const timerDisplay = document.getElementById('timer-num');
+            
             const countdown = setInterval(() => {
                 timeLeft--;
                 timerDisplay.innerText = timeLeft;
+
+                // Change message based on time remaining
+                if (timeLeft === 8) statusLabel.innerText = messages[0];
+                if (timeLeft === 6) statusLabel.innerText = messages[1];
+                if (timeLeft === 4) statusLabel.innerText = messages[2];
+                if (timeLeft === 2) statusLabel.innerText = messages[3];
+                if (timeLeft === 1) statusLabel.innerText = messages[4];
+
                 if (timeLeft <= 0) {
                     clearInterval(countdown);
-                    showCredentials();
+                    // Brief "Success" state before showing creds
+                    statusLabel.innerText = "SUCCESS!";
+                    statusIcon.innerHTML = '<i class="fa-solid fa-circle-check"></i>';
+                    setTimeout(showCredentials, 800); 
                 }
             }, 1000);
         }
@@ -113,44 +148,36 @@
             document.getElementById('view-creds').classList.remove('hidden');
         }
 
-        // IMPROVED COPY FUNCTION
-        function smartCopy(text, element) {
-            // Strategy 1: Modern Clipboard API
+        // Automatic Copy Function
+        function smartCopy(element) {
+            const textToCopy = element.querySelector('.value').innerText;
+            
+            const handleCopy = () => {
+                const label = element.querySelector('.label');
+                const originalText = label.innerText;
+                label.innerText = "COPIED TO CLIPBOARD!";
+                label.style.color = "#50946E";
+                setTimeout(() => {
+                    label.innerText = originalText;
+                    label.style.color = "#94a3b8";
+                }, 1200);
+            };
+
             if (navigator.clipboard && window.isSecureContext) {
-                navigator.clipboard.writeText(text).then(() => {
-                    showFeedback(element);
-                }).catch(() => {
-                    fallbackCopy(text, element);
-                });
+                navigator.clipboard.writeText(textToCopy).then(handleCopy).catch(() => fallbackCopy(textToCopy, handleCopy));
             } else {
-                // Strategy 2: Old School Textarea hack (Works on local files/non-https)
-                fallbackCopy(text, element);
+                fallbackCopy(textToCopy, handleCopy);
             }
         }
 
-        function fallbackCopy(text, element) {
+        function fallbackCopy(text, callback) {
             const textArea = document.createElement("textarea");
             textArea.value = text;
             document.body.appendChild(textArea);
             textArea.select();
-            try {
-                document.execCommand('copy');
-                showFeedback(element);
-            } catch (err) {
-                console.error('Unable to copy', err);
-            }
+            document.execCommand('copy');
             document.body.removeChild(textArea);
-        }
-
-        function showFeedback(element) {
-            const label = element.querySelector('.label');
-            const originalText = label.innerText;
-            label.innerText = "COPIED!";
-            label.style.color = "#50946E";
-            setTimeout(() => {
-                label.innerText = originalText;
-                label.style.color = "#94a3b8";
-            }, 1000);
+            callback();
         }
     </script>
 </body>
