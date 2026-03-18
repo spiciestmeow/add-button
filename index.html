@@ -1,50 +1,89 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>Page Title</title>
-<style>
-/* Container styling stays the same, or matches the new mood */
-.card {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background-color: #f8fafc; 
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  padding: 40px 60px;
-  text-align: center;
-  max-width: 500px;
-  margin: 20px auto;
-}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account Details Card</title>
+    <style>
+        /* Center the card on the page */
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f0f2f5;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+        }
 
-/* Updated Button with #50946E */
-.btn {
-  background-color: #50946E; /* Your new custom color */
-  color: white;
-  border: none;
-  border-radius: 12px;
-  padding: 14px 32px;
-  font-size: 18px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  
-  /* Adjusted shadow to match #50946E with 30% opacity */
-  box-shadow: 0 4px 15px rgba(80, 148, 110, 0.3);
-}
+        /* The Card Container */
+        .card {
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 40px 60px;
+            text-align: center;
+            max-width: 450px;
+            width: 100%;
+        }
 
-/* Hover state for the new color */
-.btn:hover {
-  background-color: #437d5d; /* Slightly darker shade for feedback */
-  transform: translateY(-1px); /* Adds a nice subtle lift */
-  box-shadow: 0 6px 20px rgba(80, 148, 110, 0.4);
-}
-</style>
+        /* The Instruction Text */
+        .instruction {
+            color: #64748b;
+            font-size: 16px;
+            margin-bottom: 24px;
+            margin-top: 0;
+        }
+
+        /* Link Wrapper to make it clickable to a URL */
+        .btn-link {
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        /* The Static Button with #50946E */
+        .btn {
+            background-color: #50946E;
+            color: #ffffff;
+            border: none;
+            border-radius: 10px;
+            padding: 14px 34px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            
+            /* Static Shadow */
+            box-shadow: 0 4px 12px rgba(80, 148, 110, 0.35);
+            
+            /* Explicitly disabling animations/transitions */
+            transition: none;
+            transform: none;
+        }
+
+        /* Ensuring hover state is identical to normal state (no animation) */
+        .btn:hover {
+            background-color: #50946E;
+            box-shadow: 0 4px 12px rgba(80, 148, 110, 0.35);
+            transform: none;
+        }
+
+        /* Ensuring active (click) state is identical */
+        .btn:active {
+            background-color: #50946E;
+            transform: none;
+        }
+    </style>
 </head>
 <body>
 
-<div class="card">
-  <p class="instruction">Click below to unlock account details</p>
-  <button class="btn">Get Account</button>
-</div>
+    <div class="card">
+        <p class="instruction">Click below to unlock account details</p>
+        
+        <a href="https://your-url-here.com" class="btn-link">
+            <button class="btn">Get Account</button>
+        </a>
+    </div>
 
 </body>
 </html>
