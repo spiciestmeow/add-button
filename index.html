@@ -3,89 +3,149 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fixed Card - Custom Dark Background</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <style>
-        /* 1. Define the Background Logic */
-        :root {
-            --page-bg: #ffffff; /* Default for Light Mode */
-        }
+        /* Base page background logic */
+        :root { --page-bg: #ffffff; }
+        @media (prefers-color-scheme: dark) { :root { --page-bg: #191919; } }
 
-        /* This triggers when your browser/system is in Dark Mode */
-        @media (prefers-color-scheme: dark) {
-            :root {
-                --page-bg: #191919; /* Your specific dark hex code */
-            }
-        }
-
-        /* 2. Apply the Background */
-        html, body {
-            margin: 0;
-            padding: 0;
-            background-color: var(--page-bg); 
+        body {
+            background-color: var(--page-bg);
             height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
         }
 
-        /* 3. The Card (Stays light regardless of mode) */
+        /* Basic Card Style (Fixed at 400px wide) */
         .card {
-            background-color: #f8fafc; 
+            background-color: #f8fafc;
             border: 1px solid #e2e8f0;
             border-radius: 12px;
-            padding: 40px 60px;
-            text-align: center;
-            max-width: 450px;
-            width: 90%;
+            padding: 40px;
+            width: 400px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            position: relative; /* Essential for positioning absolute elements */
         }
 
+        /* This rule completely hides an element */
+        .hidden { display: none !important; }
+
+        /* Permanent Instruction Text */
         .instruction {
             color: #64748b;
             font-size: 16px;
             margin-bottom: 24px;
             margin-top: 0;
+            text-align: center;
         }
 
-        .btn-link {
-            text-decoration: none;
-            display: inline-block;
-        }
+        /* VIEW 1: Initial Button (Stays centered) */
+        .initial-view { text-align: center; }
 
-        /* 4. The Button (Stays #50946E, No Animation) */
         .btn {
-            background-color: #50946E;
-            color: #ffffff;
-            border: none;
-            border-radius: 10px;
-            padding: 14px 34px;
-            font-size: 18px;
-            font-weight: 600;
-            cursor: pointer;
+            background-color: #50946E; /* Your custom green */
+            color: #ffffff; border: none; padding: 14px 34px;
+            border-radius: 10px; font-weight: 600; cursor: pointer;
+            transition: all 0.2s ease-in-out;
             box-shadow: 0 4px 12px rgba(80, 148, 110, 0.35);
-            
-            /* No animations */
-            transition: none;
-            transform: none;
         }
 
-        /* Force hover/active to be identical */
-        .btn:hover, .btn:active {
-            background-color: #50946E;
-            transform: none;
-            box-shadow: 0 4px 12px rgba(80, 148, 110, 0.35);
+        /* VIEW 2: Timer Styles (Aligned in a column) */
+        .timer-view {
+            display: flex; flex-direction: column; align-items: center; text-align: center;
         }
+
+        /* Clock Icon - Now Green */
+        .timer-icon { color: #50946E; font-size: 28px; margin-bottom: 12px; }
+
+        /* Countdown Number (Large and Bold) */
+        .countdown-text { font-size: 48px; font-weight: bold; margin: 10px 0; color: #1e293b; }
+
+        /* Progress Bar Container */
+        .progress-bar {
+            height: 4px; background: #e2e8f0; border-radius: 2px;
+            width: 70%; margin-top: 24px; overflow: hidden; position: relative;
+        }
+
+        /* Progress Fill - Now Green, filling over 10s */
+        .progress-fill {
+            position: absolute; height: 100%; background: #50946E;
+            width: 100%; left: -100%; transition: left 10s linear;
+        }
+
+        /* VIEW 3: Credentials Styles */
+        .cred-header { text-align: left; font-size: 12px; font-weight: bold; color: #64748b; margin-bottom: 15px; text-transform: uppercase; }
+        .cred-box { background: #f1f5f9; padding: 15px; border-radius: 10px; margin-bottom: 10px; text-align: left; position: relative; }
+        .label { font-size: 10px; color: #94a3b8; font-weight: bold; text-transform: uppercase; margin-bottom: 5px; }
+        .value { font-size: 16px; color: #1e293b; font-family: monospace; }
+        .copy-icon { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: #94a3b8; cursor: pointer; }
     </style>
 </head>
 <body>
 
     <div class="card">
         <p class="instruction">Click below to unlock account details</p>
-        
-        <a href="https://your-url-here.com" class="btn-link">
-            <button class="btn">Get Account</button>
-        </a>
+
+        <div id="view-initial" class="initial-view">
+            <button class="btn" onclick="startUnlock()">Get Account</button>
+        </div>
+
+        <div id="view-timer" class="timer-view hidden">
+            <div class="timer-icon"><i class="fa-regular fa-clock"></i></div>
+            <p style="color:#64748b; font-size:14px; margin:0;">Unlocking in</p>
+            <div id="timer-num" class="countdown-text">10</div>
+            <div class="progress-bar"><div id="fill" class="progress-fill"></div></div>
+        </div>
+
+        <div id="view-creds" class="hidden">
+            <div class="cred-header">Credentials</div>
+            <div class="cred-box">
+                <div class="label">Email</div>
+                <div class="value">63813714</div>
+                <i class="fa-regular fa-copy copy-icon"></i>
+            </div>
+            <div class="cred-box">
+                <div class="label">Password</div>
+                <div class="value">92013398</div>
+                <i class="fa-regular fa-copy copy-icon"></i>
+            </div>
+        </div>
     </div>
 
+    <script>
+        function startUnlock() {
+            // Hide View 1, Show View 2 (Timer)
+            document.getElementById('view-initial').classList.add('hidden');
+            document.getElementById('view-timer').classList.remove('hidden');
+            
+            // Start the loading bar animation (delayed slightly for stability)
+            setTimeout(() => { document.getElementById('fill').style.left = '0'; }, 50);
+
+            let timeLeft = 10;
+            const timerDisplay = document.getElementById('timer-num');
+
+            // Set the countdown interval
+            const countdown = setInterval(() => {
+                timeLeft--;
+                timerDisplay.innerText = timeLeft;
+
+                // When timer hits 0
+                if (timeLeft <= 0) {
+                    clearInterval(countdown); // Stop the loop
+                    showCredentials();       // Switch to the final view
+                }
+            }, 1000); // 1000ms = 1 second
+        }
+
+        function showCredentials() {
+            // Hide the Timer View entirely
+            document.getElementById('view-timer').classList.add('hidden');
+            // Show the Credentials View
+            document.getElementById('view-creds').classList.remove('hidden');
+        }
+    </script>
 </body>
 </html>
