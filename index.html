@@ -11,17 +11,16 @@
 
 body {
     background-color: var(--page-bg);
-    height: 100vh;
+    font-family: system-ui, sans-serif;
+    margin: 0;
     display: flex;
     justify-content: center;
     align-items: center;
-    font-family: system-ui, sans-serif;
-    margin: 0;
+    height: 100vh;
 }
 
 .card {
     background: #f8fafc;
-    border: 1px solid #e2e8f0;
     border-radius: 12px;
     padding: 30px 40px;
     width: 340px;
@@ -89,7 +88,6 @@ body {
 }
 </style>
 </head>
-
 <body>
 
 <div class="card">
@@ -127,9 +125,10 @@ body {
 let cachedData = null;
 let isDataReady = false;
 
+// ✅ Get token from iframe URL, not hardcoded
 const urlParams = new URLSearchParams(window.location.search);
-const id = urlParams.get('id') || 1; // default to 1 if missing
-const API_URL = `https://secure-creds-api.vercel.app/api/get-creds?id=${id}`;
+const token = urlParams.get('token');
+const API_URL = `/api/get-creds?token=${token}`;
 
 const messages = [
     "Initializing secure connection...",
@@ -140,25 +139,20 @@ const messages = [
 ];
 
 function startUnlock() {
-    // Show timer view
     toggleView('timer');
-    // Keep instruction visible here
     document.getElementById('instruction-text').classList.remove('hidden');
 
-    // 🔥 Prefetch immediately
     fetch(API_URL)
     .then(res => {
         if (!res.ok) throw new Error("Network error");
         return res.json();
     })
     .then(data => {
-        console.log("Prefetch success:", data);
         cachedData = data;
         isDataReady = true;
     })
     .catch(err => console.error("Prefetch failed:", err));
 
-    // Progress bar animation
     setTimeout(() => document.getElementById('fill').style.transform = 'translateX(0)', 50);
 
     const status = document.getElementById('status-text');
@@ -166,7 +160,6 @@ function startUnlock() {
     const timerEl = document.getElementById('timer-num');
 
     let time = 10;
-
     const interval = setInterval(() => {
         time--;
         timerEl.innerText = time;
@@ -187,13 +180,10 @@ function startUnlock() {
 }
 
 async function showCredentials() {
-    // Hide instruction in credentials view
     document.getElementById('instruction-text').classList.add('hidden');
-
     toggleView('creds');
 
     try {
-        // Wait for prefetch (up to 3s)
         let waitTime = 0;
         while (!cachedData && waitTime < 3000) {
             await new Promise(r => setTimeout(r, 200));
@@ -201,27 +191,16 @@ async function showCredentials() {
         }
 
         if (!cachedData) {
-            console.log("Fallback fetch triggered...");
             const res = await fetch(API_URL);
-            if (!res.ok) throw new Error("Network error");
             cachedData = await res.json();
         }
 
         fillData(cachedData);
 
-    } catch (err) {
-        console.error("Final error:", err);
-
-        // Retry once
-        try {
-            const res = await fetch(API_URL);
-            const data = await res.json();
-            fillData(data);
-        } catch {
-            const values = document.querySelectorAll('.value');
-            values[0].innerText = "Connection error";
-            values[1].innerText = "Retry again";
-        }
+    } catch {
+        const values = document.querySelectorAll('.value');
+        values[0].innerText = "Error";
+        values[1].innerText = "Try again";
     }
 }
 
@@ -229,8 +208,6 @@ function fillData(data) {
     const values = document.querySelectorAll('.value');
     values[0].innerText = data.email;
     values[1].innerText = data.password;
-
-    // Make credential values slightly bigger
     values.forEach(v => v.style.fontSize = "16px");
 }
 
@@ -238,20 +215,16 @@ function toggleView(view) {
     document.getElementById('view-initial').classList.add('hidden');
     document.getElementById('view-timer').classList.add('hidden');
     document.getElementById('view-creds').classList.add('hidden');
-
     document.getElementById(`view-${view}`).classList.remove('hidden');
 }
 
 function smartCopy(el) {
     const text = el.querySelector('.value').innerText;
-
     navigator.clipboard.writeText(text).then(() => {
         const label = el.querySelector('.label');
         const original = label.innerText;
-
         label.innerText = "COPIED!";
         label.style.color = "#50946E";
-
         setTimeout(() => {
             label.innerText = original;
             label.style.color = "#94a3b8";
