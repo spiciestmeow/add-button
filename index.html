@@ -180,15 +180,17 @@ function startUnlock() {
         cachedData = data;
         isDataReady = true;
 
-        if (data.status === 'Expired') {
-            // Disable button and show expired message immediately
-            btn.disabled = true;
-            btn.style.cursor = 'not-allowed';
-            btn.style.opacity = 0.6;
-            statusEl.innerText = "Account Expired";
-            icon.innerHTML = '<i class="fa-solid fa-circle-xmark"></i>';
-            return; // stop execution here
-        }
+      if (data.status === 'Expired') {
+          // Disable button and change its text
+          btn.disabled = true;
+          btn.style.cursor = 'not-allowed';
+          btn.style.opacity = 0.6;
+          btn.innerText = "Expired"; // ← Change text here
+          
+          statusEl.innerText = "Account Expired";
+          icon.innerHTML = '<i class="fa-solid fa-circle-xmark"></i>';
+          return; // stop further execution
+      }
 
         // ✅ Only run timer if account is available
         toggleView('timer');
