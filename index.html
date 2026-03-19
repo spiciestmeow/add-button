@@ -1,198 +1,263 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-    <style>
-        :root { --page-bg: #ffffff; }
-        @media (prefers-color-scheme: dark) { :root { --page-bg: #191919; } }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
 
-        body {
-            background-color: var(--page-bg);
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            margin: 0;
-        }
+<style>
+:root { --page-bg: #ffffff; }
+@media (prefers-color-scheme: dark) { :root { --page-bg: #191919; } }
 
-        .card {
-            background-color: #f8fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 12px;
-            padding: 30px 40px;
-            width: 340px;
-            text-align: center;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.06);
-        }
+body {
+    background-color: var(--page-bg);
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: system-ui, sans-serif;
+    margin: 0;
+}
 
-        .hidden { display: none !important; }
+.card {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 30px 40px;
+    width: 340px;
+    text-align: center;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+}
 
-        .instruction { color: #64748b; font-size: 14px; margin-bottom: 20px; margin-top: 0; }
+.hidden { display: none !important; }
 
-        .btn {
-            background-color: #50946E;
-            color: #ffffff; border: none; padding: 12px 28px;
-            border-radius: 10px; font-weight: 600; font-size: 15px;
-            cursor: pointer;
-            transition: transform 0.1s;
-        }
-        .btn:active { transform: scale(0.98); }
+.instruction { color: #64748b; font-size: 14px; margin-bottom: 20px; }
 
-        /* Timer View */
-        .timer-icon { color: #50946E; font-size: 20px; margin-bottom: 8px; }
-        .timer-label { color: #64748b; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
-        .countdown-text { font-size: 32px; font-weight: 700; margin: 5px 0; color: #1e293b; }
-        
-        .progress-bar { height: 3px; background: #e2e8f0; width: 60%; margin: 15px auto 0; position: relative; overflow: hidden; border-radius: 2px; }
-        .progress-fill { 
-            position: absolute; height: 100%; background: #50946E; width: 100%; left: -100%; 
-            transition: left 10s cubic-bezier(0.65, 0, 0.35, 1); /* Realistic loading curve */
-        }
+.btn {
+    background: #50946E;
+    color: #fff;
+    border: none;
+    padding: 12px 28px;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+}
+.btn:active { transform: scale(0.98); }
 
-        /* Credentials View */
-        .cred-header { text-align: left; font-size: 11px; font-weight: 700; color: #94a3b8; margin-bottom: 12px; text-transform: uppercase; }
-        .cred-box { 
-            background: #f1f5f9; padding: 12px 15px; 
-            border-radius: 8px; margin-bottom: 8px; 
-            text-align: left; position: relative; 
-            cursor: pointer; 
-            user-select: none;
-        }
-        .cred-box:active { background: #e2e8f0; }
-        .label { font-size: 9px; color: #94a3b8; font-weight: 700; text-transform: uppercase; margin-bottom: 2px; }
-        .value { font-size: 14px; color: #334155; font-family: monospace; font-weight: 600; }
-        .copy-icon { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: #cbd5e1; font-size: 14px; }
-    </style>
+/* Timer */
+.timer-icon { color: #50946E; font-size: 20px; margin-bottom: 8px; }
+.timer-label { color: #64748b; font-size: 12px; font-weight: 600; text-transform: uppercase; }
+.countdown-text { font-size: 32px; font-weight: 700; margin: 5px 0; }
+
+.progress-bar {
+    height: 3px;
+    background: #e2e8f0;
+    width: 60%;
+    margin: 15px auto 0;
+    overflow: hidden;
+}
+.progress-fill {
+    height: 100%;
+    background: #50946E;
+    width: 100%;
+    transform: translateX(-100%);
+    transition: transform 10s linear;
+}
+
+/* Credentials */
+.cred-header { text-align: left; font-size: 11px; font-weight: 700; color: #94a3b8; margin-bottom: 12px; }
+
+.cred-box {
+    background: #f1f5f9;
+    padding: 12px 15px;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    text-align: left;
+    position: relative;
+    cursor: pointer;
+}
+
+.label { font-size: 9px; color: #94a3b8; font-weight: 700; }
+.value { font-size: 14px; font-family: monospace; }
+
+.copy-icon {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #cbd5e1;
+}
+</style>
 </head>
+
 <body>
 
-    <div class="card">
-        <div id="instruction-text"><p class="instruction">Click below to unlock account details</p></div>
+<div class="card">
+    <p id="instruction-text" class="instruction">Click below to unlock account details</p>
 
-        <div id="view-initial"><button class="btn" onclick="startUnlock()">Get Account</button></div>
-
-        <div id="view-timer" class="hidden">
-            <div id="timer-status-icon" class="timer-icon"><i class="fa-regular fa-clock"></i></div>
-            <div id="status-text" class="timer-label">Connecting...</div>
-            <div id="timer-num" class="countdown-text">10</div>
-            <div class="progress-bar"><div id="fill" class="progress-fill"></div></div>
-        </div>
-
-        <div id="view-creds" class="hidden">
-            <div class="cred-header">Credentials Unlocked</div>
-            
-            <div class="cred-box" onclick="smartCopy(this)">
-                <div class="label">Email / User</div>
-                <div class="value">166528949</div>
-                <i class="fa-regular fa-copy copy-icon"></i>
-            </div>
-
-            <div class="cred-box" onclick="smartCopy(this)">
-                <div class="label">Password</div>
-                <div class="value">Hx5556954</div>
-                <i class="fa-regular fa-copy copy-icon"></i>
-            </div>
-        </div>
+    <div id="view-initial">
+        <button class="btn" onclick="startUnlock()">Get Account</button>
     </div>
 
-    <script>
-        function startUnlock() {
-            document.getElementById('view-initial').classList.add('hidden');
-            document.getElementById('view-timer').classList.remove('hidden');
-            
-            // Start progress bar animation
-            setTimeout(() => { document.getElementById('fill').style.left = '0'; }, 50);
+    <div id="view-timer" class="hidden">
+        <div id="timer-status-icon" class="timer-icon"><i class="fa-regular fa-clock"></i></div>
+        <div id="status-text" class="timer-label">Initializing...</div>
+        <div id="timer-num" class="countdown-text">10</div>
+        <div class="progress-bar"><div id="fill" class="progress-fill"></div></div>
+    </div>
 
-            const statusLabel = document.getElementById('status-text');
-            const statusIcon = document.getElementById('timer-status-icon');
-            
-            // Realistic Status Messages
-            const messages = [
-                "Locating available account...",
-                "Bypassing Steam Guard...",
-                "Fetching session keys...",
-                "Decrypting credentials...",
-                "Finalizing access..."
-            ];
+    <div id="view-creds" class="hidden">
+        <div class="cred-header">Credentials Unlocked</div>
 
-            let timeLeft = 10;
-            const timerDisplay = document.getElementById('timer-num');
-            
-            const countdown = setInterval(() => {
-                timeLeft--;
-                timerDisplay.innerText = timeLeft;
+        <div class="cred-box" onclick="smartCopy(this)">
+            <div class="label">Email / User</div>
+            <div class="value">Loading...</div>
+            <i class="fa-regular fa-copy copy-icon"></i>
+        </div>
 
-                // Change message based on time remaining
-                if (timeLeft === 8) statusLabel.innerText = messages[0];
-                if (timeLeft === 6) statusLabel.innerText = messages[1];
-                if (timeLeft === 4) statusLabel.innerText = messages[2];
-                if (timeLeft === 2) statusLabel.innerText = messages[3];
-                if (timeLeft === 1) statusLabel.innerText = messages[4];
+        <div class="cred-box" onclick="smartCopy(this)">
+            <div class="label">Password</div>
+            <div class="value">Loading...</div>
+            <i class="fa-regular fa-copy copy-icon"></i>
+        </div>
+    </div>
+</div>
 
-                if (timeLeft <= 0) {
-                    clearInterval(countdown);
-                    // Brief "Success" state before showing creds
-                    statusLabel.innerText = "SUCCESS!";
-                    statusIcon.innerHTML = '<i class="fa-solid fa-circle-check"></i>';
-                    setTimeout(showCredentials, 800); 
-                }
-            }, 1000);
+<script>
+let cachedData = null;
+let isDataReady = false;
+
+const API_URL = 'https://secure-creds-api.vercel.app/api/get-creds';
+
+const messages = [
+    "Initializing secure connection...",
+    "Contacting account server...",
+    "Fetching account data...",
+    "Decrypting credentials...",
+    "Preparing access..."
+];
+
+function startUnlock() {
+    toggleView('timer');
+
+    // 🔥 Pre-fetch immediately
+    fetch(API_URL)
+    .then(res => {
+        if (!res.ok) throw new Error("Network error");
+        return res.json();
+    })
+    .then(data => {
+        console.log("Prefetch success:", data);
+        cachedData = data;
+        isDataReady = true;
+    })
+    .catch(err => {
+        console.error("Prefetch failed:", err);
+    });
+    // progress bar
+    setTimeout(() => document.getElementById('fill').style.transform = 'translateX(0)', 50);
+
+    const status = document.getElementById('status-text');
+    const icon = document.getElementById('timer-status-icon');
+    const timerEl = document.getElementById('timer-num');
+
+    let time = 10;
+
+    const interval = setInterval(() => {
+        time--;
+        timerEl.innerText = time;
+
+        if (time === 8) status.innerText = messages[0];
+        if (time === 6) status.innerText = messages[1];
+        if (time === 4) status.innerText = messages[2];
+
+        if (time === 2) {
+            status.innerText = isDataReady ? "Credentials ready..." : "Waiting for server...";
         }
 
-        async function showCredentials() {
-            try {
-                const res = await fetch('https://secure-creds-api.vercel.app/api/get-creds');
-                const data = await res.json();
-        
-                document.getElementById('instruction-text').classList.add('hidden');
-                document.getElementById('view-timer').classList.add('hidden');
-                document.getElementById('view-creds').classList.remove('hidden');
-        
-                // Inject real data
-                const values = document.querySelectorAll('.value');
-                values[0].innerText = data.email;
-                values[1].innerText = data.password;
-        
-            } catch (err) {
-                console.error(err);
-                alert('Failed to load credentials');
-            }
+        if (time === 1) status.innerText = messages[4];
+
+        if (time <= 0) {
+            clearInterval(interval);
+            status.innerText = "SUCCESS!";
+            icon.innerHTML = '<i class="fa-solid fa-circle-check"></i>';
+            setTimeout(showCredentials, 200);
+        }
+    }, 1000);
+}
+
+async function showCredentials() {
+    toggleView('creds');
+
+    try {
+        // 🧠 Wait for prefetch (up to 3 seconds)
+        let waitTime = 0;
+
+        while (!cachedData && waitTime < 3000) {
+            await new Promise(r => setTimeout(r, 200));
+            waitTime += 200;
         }
 
-        // Automatic Copy Function
-        function smartCopy(element) {
-            const textToCopy = element.querySelector('.value').innerText;
-            
-            const handleCopy = () => {
-                const label = element.querySelector('.label');
-                const originalText = label.innerText;
-                label.innerText = "COPIED TO CLIPBOARD!";
-                label.style.color = "#50946E";
-                setTimeout(() => {
-                    label.innerText = originalText;
-                    label.style.color = "#94a3b8";
-                }, 1200);
-            };
+        // If still no data → fetch manually
+        if (!cachedData) {
+            console.log("Fallback fetch triggered...");
+            const res = await fetch(API_URL);
 
-            if (navigator.clipboard && window.isSecureContext) {
-                navigator.clipboard.writeText(textToCopy).then(handleCopy).catch(() => fallbackCopy(textToCopy, handleCopy));
-            } else {
-                fallbackCopy(textToCopy, handleCopy);
-            }
+            if (!res.ok) throw new Error("Network error");
+
+            cachedData = await res.json();
         }
 
-        function fallbackCopy(text, callback) {
-            const textArea = document.createElement("textarea");
-            textArea.value = text;
-            document.body.appendChild(textArea);
-            textArea.select();
-            document.execCommand('copy');
-            document.body.removeChild(textArea);
-            callback();
+        fillData(cachedData);
+
+    } catch (err) {
+        console.error("Final error:", err);
+
+        // 🛠 Retry ONCE automatically
+        try {
+            const res = await fetch(API_URL);
+            const data = await res.json();
+            fillData(data);
+        } catch {
+            // Only fail if EVERYTHING fails
+            const values = document.querySelectorAll('.value');
+            values[0].innerText = "Connection error";
+            values[1].innerText = "Retry again";
         }
-    </script>
+    }
+}
+
+function fillData(data) {
+    const values = document.querySelectorAll('.value');
+    values[0].innerText = data.email;
+    values[1].innerText = data.password;
+}
+
+function toggleView(view) {
+    document.getElementById('view-initial').classList.add('hidden');
+    document.getElementById('view-timer').classList.add('hidden');
+    document.getElementById('view-creds').classList.add('hidden');
+
+    document.getElementById(`view-${view}`).classList.remove('hidden');
+}
+
+function smartCopy(el) {
+    const text = el.querySelector('.value').innerText;
+
+    navigator.clipboard.writeText(text).then(() => {
+        const label = el.querySelector('.label');
+        const original = label.innerText;
+
+        label.innerText = "COPIED!";
+        label.style.color = "#50946E";
+
+        setTimeout(() => {
+            label.innerText = original;
+            label.style.color = "#94a3b8";
+        }, 1000);
+    });
+}
+</script>
+
 </body>
 </html>
