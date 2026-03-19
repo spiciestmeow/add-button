@@ -168,44 +168,58 @@ const messages = [
 ];
 
 function startUnlock() {
-    toggleView('timer');
+    const btn = document.querySelector('.btn');
     const statusEl = document.getElementById('status-text');
     const icon = document.getElementById('timer-status-icon');
     const timerEl = document.getElementById('timer-num');
 
-    // Prefetch data
+    // Prefetch data first
     fetch(API_URL)
     .then(res => res.json())
     .then(data => {
         cachedData = data;
         isDataReady = true;
 
-        // If status is Expired, disable button
         if (data.status === 'Expired') {
+            // Disable button and show expired message immediately
+            btn.disabled = true;
+            btn.style.cursor = 'not-allowed';
+            btn.style.opacity = 0.6;
             statusEl.innerText = "Account Expired";
             icon.innerHTML = '<i class="fa-solid fa-circle-xmark"></i>';
-            document.querySelector('.btn').disabled = true;
-            document.querySelector('.btn').style.cursor = 'not-allowed';
-            document.querySelector('.btn').style.opacity = 0.6;
+            return; // stop execution here
         }
-    })
-    .catch(err => console.error(err));
 
-    setTimeout(() => document.getElementById('fill').style.transform = 'translateX(0)', 50);
+        // ✅ Only run timer if account is available
+        toggleView('timer');
+        document.getElementById('instruction-text').classList.remove('hidden');
 
-    let time = 10;
-    const interval = setInterval(() => {
-        time--;
-        timerEl.innerText = time;
-        if (time <= 0) {
-            clearInterval(interval);
-            if (cachedData && cachedData.status !== 'Expired') {
+        setTimeout(() => document.getElementById('fill').style.transform = 'translateX(0)', 50);
+
+        let time = 10;
+        const interval = setInterval(() => {
+            time--;
+            timerEl.innerText = time;
+
+            if (time === 8) statusEl.innerText = "Initializing secure connection...";
+            if (time === 6) statusEl.innerText = "Contacting account server...";
+            if (time === 4) statusEl.innerText = "Fetching account data...";
+            if (time === 2) statusEl.innerText = "Preparing access...";
+
+            if (time <= 0) {
+                clearInterval(interval);
                 statusEl.innerText = "SUCCESS!";
                 icon.innerHTML = '<i class="fa-solid fa-circle-check"></i>';
                 setTimeout(showCredentials, 200);
             }
-        }
-    }, 1000);
+        }, 1000);
+
+    })
+    .catch(err => {
+        console.error(err);
+        statusEl.innerText = "Network Error";
+        icon.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i>';
+    });
 }
 
 async function showCredentials() {
