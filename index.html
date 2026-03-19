@@ -169,41 +169,41 @@ const messages = [
 
 function startUnlock() {
     toggleView('timer');
-    document.getElementById('instruction-text').classList.remove('hidden');
+    const statusEl = document.getElementById('status-text');
+    const icon = document.getElementById('timer-status-icon');
+    const timerEl = document.getElementById('timer-num');
 
+    // Prefetch data
     fetch(API_URL)
-    .then(res => {
-        if (!res.ok) throw new Error("Network error");
-        return res.json();
-    })
+    .then(res => res.json())
     .then(data => {
         cachedData = data;
         isDataReady = true;
+
+        // If status is Expired, disable button
+        if (data.status === 'Expired') {
+            statusEl.innerText = "Account Expired";
+            icon.innerHTML = '<i class="fa-solid fa-circle-xmark"></i>';
+            document.querySelector('.btn').disabled = true;
+            document.querySelector('.btn').style.cursor = 'not-allowed';
+            document.querySelector('.btn').style.opacity = 0.6;
+        }
     })
-    .catch(err => console.error("Prefetch failed:", err));
+    .catch(err => console.error(err));
 
     setTimeout(() => document.getElementById('fill').style.transform = 'translateX(0)', 50);
-
-    const status = document.getElementById('status-text');
-    const icon = document.getElementById('timer-status-icon');
-    const timerEl = document.getElementById('timer-num');
 
     let time = 10;
     const interval = setInterval(() => {
         time--;
         timerEl.innerText = time;
-
-        if (time === 8) status.innerText = messages[0];
-        if (time === 6) status.innerText = messages[1];
-        if (time === 4) status.innerText = messages[2];
-        if (time === 2) status.innerText = isDataReady ? "Credentials ready..." : "Waiting for server...";
-        if (time === 1) status.innerText = messages[4];
-
         if (time <= 0) {
             clearInterval(interval);
-            status.innerText = "SUCCESS!";
-            icon.innerHTML = '<i class="fa-solid fa-circle-check"></i>';
-            setTimeout(showCredentials, 200);
+            if (cachedData && cachedData.status !== 'Expired') {
+                statusEl.innerText = "SUCCESS!";
+                icon.innerHTML = '<i class="fa-solid fa-circle-check"></i>';
+                setTimeout(showCredentials, 200);
+            }
         }
     }, 1000);
 }
