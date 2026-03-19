@@ -142,10 +142,24 @@
             }, 1000);
         }
 
-        function showCredentials() {
-            document.getElementById('instruction-text').classList.add('hidden');
-            document.getElementById('view-timer').classList.add('hidden');
-            document.getElementById('view-creds').classList.remove('hidden');
+        async function showCredentials() {
+            try {
+                const res = await fetch('https://secure-creds-api.vercel.app/api/get-creds');
+                const data = await res.json();
+        
+                document.getElementById('instruction-text').classList.add('hidden');
+                document.getElementById('view-timer').classList.add('hidden');
+                document.getElementById('view-creds').classList.remove('hidden');
+        
+                // Inject real data
+                const values = document.querySelectorAll('.value');
+                values[0].innerText = data.email;
+                values[1].innerText = data.password;
+        
+            } catch (err) {
+                console.error(err);
+                alert('Failed to load credentials');
+            }
         }
 
         // Automatic Copy Function
