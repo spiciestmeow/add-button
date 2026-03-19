@@ -7,19 +7,16 @@ const supabase = createClient(
 
 export default async function handler(req, res) {
   try {
-    const { token } = req.query;
-
+    const token = req.query.token;
     if (!token) return res.status(400).json({ error: 'Missing token' });
 
     const { data, error } = await supabase
       .from('steamCredentials')
-      .select('email,password')
+      .select('email,password,status') // include status
       .eq('token', token)
-      .single(); // only fetch one row per token
+      .single();
 
-    if (error || !data) {
-      return res.status(404).json({ error: 'Invalid token' });
-    }
+    if (error) return res.status(500).json({ error: error.message });
 
     res.status(200).json(data);
   } catch (err) {
