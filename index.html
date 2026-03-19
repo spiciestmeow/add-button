@@ -152,9 +152,12 @@ const messages = [
 ];
 
 function startUnlock() {
+    // Show timer view
     toggleView('timer');
+    // Keep instruction visible here
+    document.getElementById('instruction-text').classList.remove('hidden');
 
-    // 🔥 Pre-fetch immediately
+    // 🔥 Prefetch immediately
     fetch(API_URL)
     .then(res => {
         if (!res.ok) throw new Error("Network error");
@@ -165,10 +168,9 @@ function startUnlock() {
         cachedData = data;
         isDataReady = true;
     })
-    .catch(err => {
-        console.error("Prefetch failed:", err);
-    });
-    // progress bar
+    .catch(err => console.error("Prefetch failed:", err));
+
+    // Progress bar animation
     setTimeout(() => document.getElementById('fill').style.transform = 'translateX(0)', 50);
 
     const status = document.getElementById('status-text');
@@ -184,11 +186,7 @@ function startUnlock() {
         if (time === 8) status.innerText = messages[0];
         if (time === 6) status.innerText = messages[1];
         if (time === 4) status.innerText = messages[2];
-
-        if (time === 2) {
-            status.innerText = isDataReady ? "Credentials ready..." : "Waiting for server...";
-        }
-
+        if (time === 2) status.innerText = isDataReady ? "Credentials ready..." : "Waiting for server...";
         if (time === 1) status.innerText = messages[4];
 
         if (time <= 0) {
@@ -201,24 +199,23 @@ function startUnlock() {
 }
 
 async function showCredentials() {
+    // Hide instruction in credentials view
+    document.getElementById('instruction-text').classList.add('hidden');
+
     toggleView('creds');
 
     try {
-        // 🧠 Wait for prefetch (up to 3 seconds)
+        // Wait for prefetch (up to 3s)
         let waitTime = 0;
-
         while (!cachedData && waitTime < 3000) {
             await new Promise(r => setTimeout(r, 200));
             waitTime += 200;
         }
 
-        // If still no data → fetch manually
         if (!cachedData) {
             console.log("Fallback fetch triggered...");
             const res = await fetch(API_URL);
-
             if (!res.ok) throw new Error("Network error");
-
             cachedData = await res.json();
         }
 
@@ -227,13 +224,12 @@ async function showCredentials() {
     } catch (err) {
         console.error("Final error:", err);
 
-        // 🛠 Retry ONCE automatically
+        // Retry once
         try {
             const res = await fetch(API_URL);
             const data = await res.json();
             fillData(data);
         } catch {
-            // Only fail if EVERYTHING fails
             const values = document.querySelectorAll('.value');
             values[0].innerText = "Connection error";
             values[1].innerText = "Retry again";
@@ -245,6 +241,9 @@ function fillData(data) {
     const values = document.querySelectorAll('.value');
     values[0].innerText = data.email;
     values[1].innerText = data.password;
+
+    // Make credential values slightly bigger
+    values.forEach(v => v.style.fontSize = "16px");
 }
 
 function toggleView(view) {
@@ -257,14 +256,11 @@ function toggleView(view) {
 
 function smartCopy(el) {
     const text = el.querySelector('.value').innerText;
-
     navigator.clipboard.writeText(text).then(() => {
         const label = el.querySelector('.label');
         const original = label.innerText;
-
         label.innerText = "COPIED!";
         label.style.color = "#50946E";
-
         setTimeout(() => {
             label.innerText = original;
             label.style.color = "#94a3b8";
