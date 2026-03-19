@@ -73,38 +73,27 @@ body {
     margin-bottom: 12px;
 }
 
+.cred-header { text-align: left; font-size: 11px; font-weight: 700; color: #94a3b8; margin-bottom: 12px; }
+
 .cred-box {
     background: #f1f5f9;
     padding: 12px 15px;
     border-radius: 8px;
     margin-bottom: 8px;
-    position: relative;   /* required for absolute icon */
+    text-align: left;
+    position: relative;
     cursor: pointer;
-    display: flex;        /* new: flex layout */
-    justify-content: space-between; /* space between value and icon */
-    align-items: center;  /* vertically center icon and value */
 }
 
-
-.label {
-    font-size: 13px;      /* bigger label */
-    font-weight: 700;
-    color: #64748b;
-    margin-bottom: 4px;
-}
-
-.value {
-    font-size: 16px;
-    font-family: monospace;
-    text-align: left;     /* left-aligned text */
-    color: #334155;
-    font-weight: 600;
-}
+.label { font-size: 9px; color: #94a3b8; font-weight: 700; }
+.value { font-size: 14px; font-family: monospace; }
     
 .copy-icon {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
     color: #cbd5e1;
-    font-size: 14px;
-    margin-left: 10px;    /* space between value and icon */
 }
 </style>
 </head>
