@@ -127,7 +127,9 @@ body {
 let cachedData = null;
 let isDataReady = false;
 
-const API_URL = 'https://secure-creds-api.vercel.app/api/get-creds';
+const urlParams = new URLSearchParams(window.location.search);
+const id = urlParams.get('id') || 1; // default to 1 if missing
+const API_URL = `https://secure-creds-api.vercel.app/api/get-creds?id=${id}`;
 
 const messages = [
     "Initializing secure connection...",
