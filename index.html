@@ -80,20 +80,24 @@ body {
     padding: 12px 15px;
     border-radius: 8px;
     margin-bottom: 8px;
-    text-align: left;
-    position: relative;
+    display: flex;
+    justify-content: space-between; /* icon on the right */
+    align-items: center;
     cursor: pointer;
 }
 
 .label { font-size: 9px; color: #94a3b8; font-weight: 700; }
-.value { font-size: 14px; font-family: monospace; }
+.value {
+    font-size: 16px;
+    font-family: monospace;
+    text-align: left;
+    color: #334155;
+    font-weight: 600;
+}
     
 .copy-icon {
-    position: absolute;
-    right: 15px;
-    top: 50%;
-    transform: translateY(-50%);
     color: #cbd5e1;
+    font-size: 16px;
 }
 </style>
 </head>
@@ -116,15 +120,15 @@ body {
 
     <div id="view-creds" class="hidden">
         <div class="cred-header">Credentials</div>
-
+    
         <div class="cred-box" onclick="smartCopy(this)">
-            <div class="label">Email</div>
             <div class="value">Loading...</div>
+            <i class="fa-regular fa-copy copy-icon"></i>
         </div>
-
+    
         <div class="cred-box" onclick="smartCopy(this)">
-            <div class="label">Password</div>
             <div class="value">Loading...</div>
+            <i class="fa-regular fa-copy copy-icon"></i>
         </div>
     </div>
 </div>
@@ -248,15 +252,11 @@ function toggleView(view) {
 
 function smartCopy(el) {
     const text = el.querySelector('.value').innerText;
+    const icon = el.querySelector('.copy-icon');
+
     navigator.clipboard.writeText(text).then(() => {
-        const label = el.querySelector('.label');
-        const original = label.innerText;
-        label.innerText = "COPIED!";
-        label.style.color = "#50946E";
-        setTimeout(() => {
-            label.innerText = original;
-            label.style.color = "#94a3b8";
-        }, 1000);
+        icon.style.color = "#50946E";
+        setTimeout(() => icon.style.color = "#cbd5e1", 1000);
     });
 }
 </script>
