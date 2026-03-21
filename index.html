@@ -52,44 +52,25 @@
      transform: scale(0.98);
 }
 /* Timer */
- .timer-icon {
-     color: #50946E;
-     font-size: 20px;
-     margin-bottom: 8px;
-}
- .timer-label {
-     color: #64748b;
-     font-size: 12px;
-     font-weight: 600;
-     text-transform: uppercase;
-}
- .countdown-text {
-     font-size: 32px;
-     font-weight: 700;
-     margin: 5px 0;
-}
- .progress-bar {
-     height: 3px;
-     background: #e2e8f0;
-     width: 60%;
-     margin: 15px auto 0;
-     overflow: hidden;
-}
- .progress-fill {
-     height: 100%;
-     background: #50946E;
-     width: 100%;
-     transform: translateX(-100%);
-     transition: transform 10s linear;
-}
+.timer-icon { color: #50946E; font-size: 20px; margin-bottom: 8px; }
+.timer-label { color: #64748b; font-size: 12px; font-weight: 600; text-transform: uppercase; }
+.countdown-text { font-size: 32px; font-weight: 700; margin: 5px 0; }
+.progress-bar { height: 3px; background: #e2e8f0; width: 60%; margin: 15px auto 0; overflow: hidden; }
+.progress-fill { height: 100%; background: #50946E; width: 100%; transform: translateX(-100%); transition: transform 10s linear; }
+
 /* Credentials */
- .cred-header {
-     text-align: left;
-     font-size: 11px;
-     font-weight: 700;
-     color: #94a3b8;
-     margin-bottom: 12px;
+.cred-header {
+    text-align: left;
+    font-size: 11px;
+    font-weight: 700;
+    color: #94a3b8;
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: space-between;
 }
+
+#session-timer { color: #ef4444; font-variant-numeric: tabular-nums; }
+
  .cred-box {
      background: #f1f5f9;
      padding: 12px 15px;
@@ -134,7 +115,10 @@
     </div>
 
     <div id="view-creds" class="hidden">
-        <div class="cred-header">Credentials Unlocked</div>
+        <div class="cred-header">
+            <span>Credentials Unlocked</span>
+            <span id="session-timer">30s</span>
+        </div>
 
         <div class="cred-box" onclick="smartCopy(this)">
             <div class="label">Email / User</div>
@@ -159,35 +143,14 @@ const token = urlParams.get('token');
 const API_URL = `/api/get-creds?token=${token}`;
 const COOLDOWN_KEY = `finished_${token}`;
 
-// 1. On Load: ONLY trigger the 60s wait if they already finished the process recently
+// 1. REFRESH PROTECTION: On Load check
 window.onload = () => {
     const finishTime = localStorage.getItem(COOLDOWN_KEY);
     const now = Date.now();
     const cooldownMs = 60000; 
 
     if (finishTime && (now - finishTime < cooldownMs)) {
-        const remaining = Math.ceil((cooldownMs - (now - finishTime)) / 1000);
-        
-        // Lock the button and show the countdown
-        const btn = document.querySelector('.btn');
-        btn.disabled = true;
-        btn.style.opacity = "0.6";
-        btn.innerText = `Wait ${remaining}s`;
-
-        const refreshTimer = setInterval(() => {
-            const currentNow = Date.now();
-            const currentRemaining = Math.ceil((cooldownMs - (currentNow - finishTime)) / 1000);
-            
-            if (currentRemaining <= 0) {
-                clearInterval(refreshTimer);
-                btn.disabled = false;
-                btn.innerText = "Get Account";
-                btn.style.opacity = "1";
-                localStorage.removeItem(COOLDOWN_KEY);
-            } else {
-                btn.innerText = `Wait ${currentRemaining}s`;
-            }
-        }, 1000);
+        startCooldownUI(finishTime, cooldownMs);
     }
 };
 
@@ -205,7 +168,6 @@ function startUnlock() {
     const icon = document.getElementById('timer-status-icon');
     const timerEl = document.getElementById('timer-num');
 
-    // Prevent double-clicking while the 10s timer is active
     btn.disabled = true;
     btn.innerText = "Processing...";
 
@@ -213,13 +175,8 @@ function startUnlock() {
     .then(res => res.json())
     .then(data => {
         cachedData = data;
-        
-        if (data.status === 'Expired') {
-            btn.innerText = "Expired";
-            return;
-        }
+        if (data.status === 'Expired') { btn.innerText = "Expired"; return; }
 
-        // --- START YOUR 10s TIMER ---
         toggleView('timer');
         setTimeout(() => document.getElementById('fill').style.transform = 'translateX(0)', 50);
 
@@ -227,28 +184,20 @@ function startUnlock() {
         const interval = setInterval(() => {
             time--;
             timerEl.innerText = time;
-
-            if (time === 8) statusEl.innerText = "Initializing secure connection...";
-            if (time === 6) statusEl.innerText = "Contacting account server...";
-            if (time === 4) statusEl.innerText = "Fetching account data...";
-            if (time === 2) statusEl.innerText = "Preparing access...";
+            if (time === 8) statusEl.innerText = "Contacting server...";
+            if (time === 4) statusEl.innerText = "Decrypting data...";
 
             if (time <= 0) {
                 clearInterval(interval);
                 statusEl.innerText = "SUCCESS!";
                 icon.innerHTML = '<i class="fa-solid fa-circle-check"></i>';
-                
-                // SAVE FINISH TIME: This is what triggers the cooldown ONLY on refresh
-                localStorage.setItem(COOLDOWN_KEY, Date.now());
-
-                setTimeout(showCredentials, 200);
+                showCredentials();
             }
         }, 1000);
     })
-    .catch(err => {
-        console.error(err);
-        btn.disabled = false;
-        btn.innerText = "Get Account";
+    .catch(() => { 
+        btn.disabled = false; 
+        btn.innerText = "Get Account"; 
     });
 }
 
@@ -276,26 +225,55 @@ function startBtnTimer(seconds) {
 async function showCredentials() {
     document.getElementById('instruction-text').classList.add('hidden');
     toggleView('creds');
+    
+    // Fill the values
+    document.getElementById('email-val').innerText = cachedData.email;
+    document.getElementById('pass-val').innerText = cachedData.password;
 
-    try {
-        let waitTime = 0;
-        while (!cachedData && waitTime < 3000) {
-            await new Promise(r => setTimeout(r, 200));
-            waitTime += 200;
+    const timerSpan = document.getElementById('session-timer');
+    let timeLeft = 30;
+
+    // Start 30s Window
+    const activeWindow = setInterval(() => {
+        timeLeft--;
+        timerSpan.innerText = `${timeLeft}s`;
+
+        if (timeLeft <= 0) {
+            clearInterval(activeWindow);
+            
+            // Trigger 60s cooldown now
+            const finishTime = Date.now();
+            localStorage.setItem(COOLDOWN_KEY, finishTime);
+            
+            toggleView('initial');
+            document.getElementById('instruction-text').classList.remove('hidden');
+            startCooldownUI(finishTime, 60000);
+            
+            // Reset for next use
+            timerSpan.innerText = "30s";
         }
+    }, 1000);
+}
 
-        if (!cachedData) {
-            const res = await fetch(API_URL);
-            cachedData = await res.json();
+function startCooldownUI(finishTime, cooldownMs) {
+    const btn = document.querySelector('.btn');
+    btn.disabled = true;
+    btn.style.opacity = "0.6";
+
+    const refreshInterval = setInterval(() => {
+        const now = Date.now();
+        const remaining = Math.ceil((cooldownMs - (now - finishTime)) / 1000);
+
+        if (remaining <= 0) {
+            clearInterval(refreshInterval);
+            btn.disabled = false;
+            btn.innerText = "Get Account";
+            btn.style.opacity = "1";
+            localStorage.removeItem(COOLDOWN_KEY);
+        } else {
+            btn.innerText = `Wait ${remaining}s`;
         }
-
-        fillData(cachedData);
-
-    } catch {
-        const values = document.querySelectorAll('.value');
-        values[0].innerText = "Error";
-        values[1].innerText = "Try again";
-    }
+    }, 1000);
 }
 
 function fillData(data) {
