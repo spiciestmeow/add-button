@@ -246,6 +246,7 @@ function startBtnTimer(finishTime, cooldownMs) {
 
     const refreshTimer = setInterval(() => {
         const now = Date.now();
+        // Calculate remaining time by comparing 'now' to the 'finishTime'
         const remaining = Math.ceil((cooldownMs - (now - finishTime)) / 1000);
         
         if (remaining <= 0) {
@@ -255,6 +256,7 @@ function startBtnTimer(finishTime, cooldownMs) {
             btn.style.opacity = "1";
             localStorage.removeItem(COOLDOWN_KEY);
         } else {
+            // 'remaining' is now a valid number, so no more NaNs
             btn.innerText = `Wait ${remaining}s`;
         }
     }, 1000);
@@ -275,16 +277,15 @@ async function showCredentials() {
         if (timeLeft <= 0) {
             clearInterval(activeWindow);
             
-            // Set 60s cooldown now
+            // Capture the exact moment the 60s cooldown begins
             const finishTime = Date.now();
             localStorage.setItem(COOLDOWN_KEY, finishTime);
             
             toggleView('initial');
             document.getElementById('instruction-text').classList.remove('hidden');
             
-            // Re-use your existing 60s button timer
-            const remaining = 60;
-            startBtnTimer(remaining); 
+            // Pass the timestamp and the 60,000ms duration
+            startBtnTimer(finishTime, 60000); 
         }
     }, 1000);
 }
