@@ -182,7 +182,7 @@ function startUnlock() {
     const btn = document.querySelector('.btn');
     const statusEl = document.getElementById('status-text');
     const timerEl = document.getElementById('timer-num');
-    const fill = document.getElementById('fill'); // Get the progress bar
+    const fill = document.getElementById('fill');
 
     btn.disabled = true;
     btn.innerText = "Processing...";
@@ -197,15 +197,11 @@ function startUnlock() {
             return;
         }
 
-        // 1. Show the timer view
         toggleView('timer');
 
-        // 2. RESET THE BAR (Ensure it starts at -100%)
         fill.style.transition = 'none'; 
         fill.style.transform = 'translateX(-100%)';
         
-        // 3. FORCE REFLOW (The "Kick")
-        // This line makes the browser recognize the -100% position before moving
         void fill.offsetWidth; 
 
         // 4. START THE 10s SLIDE
@@ -227,7 +223,6 @@ function startUnlock() {
                 statusEl.innerText = "SUCCESS!";
                 document.getElementById('timer-status-icon').innerHTML = '<i class="fa-solid fa-circle-check"></i>';
                 
-                // Trigger the 30s view
                 setTimeout(showCredentials, 200);
             }
         }, 1000);
@@ -246,7 +241,6 @@ function startBtnTimer(finishTime, cooldownMs) {
 
     const refreshTimer = setInterval(() => {
         const now = Date.now();
-        // Calculate remaining time by comparing 'now' to the 'finishTime'
         const remaining = Math.ceil((cooldownMs - (now - finishTime)) / 1000);
         
         if (remaining <= 0) {
@@ -268,23 +262,37 @@ async function showCredentials() {
     fillData(cachedData);
 
     let timeLeft = 30;
+    const credsView = document.getElementById('view-creds');
+    
     const header = document.querySelector('.cred-header');
+    header.innerHTML = `Credentials`;
+
+    if (!document.getElementById('hurry-timer')) {
+        const warning = document.createElement('div');
+        warning.id = 'hurry-timer';
+        warning.style.cssText = "color:#e11d48; font-size:13px; font-weight:800; margin-top:15px; text-align:center; width:100%;";
+        warning.innerHTML = `You have only <span id="live-seconds">30</span> seconds, hurry up!`;
+        credsView.appendChild(warning);
+    }
 
     const activeWindow = setInterval(() => {
         timeLeft--;
-        header.innerHTML = `Credentials Unlocked <span style="float:right; color:#ef4444; font-weight:800;">${timeLeft}s</span>`;
+        
+        const liveSecs = document.getElementById('live-seconds');
+        if (liveSecs) liveSecs.innerText = timeLeft;
 
         if (timeLeft <= 0) {
             clearInterval(activeWindow);
             
-            // Capture the exact moment the 60s cooldown begins
+            const msg = document.getElementById('hurry-timer');
+            if (msg) msg.remove();
+
             const finishTime = Date.now();
             localStorage.setItem(COOLDOWN_KEY, finishTime);
             
             toggleView('initial');
             document.getElementById('instruction-text').classList.remove('hidden');
             
-            // Pass the timestamp and the 60,000ms duration
             startBtnTimer(finishTime, 60000); 
         }
     }, 1000);
