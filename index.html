@@ -182,6 +182,7 @@ function startUnlock() {
     const btn = document.querySelector('.btn');
     const statusEl = document.getElementById('status-text');
     const timerEl = document.getElementById('timer-num');
+    const fill = document.getElementById('fill'); // Get the progress bar
 
     btn.disabled = true;
     btn.innerText = "Processing...";
@@ -190,22 +191,52 @@ function startUnlock() {
     .then(res => res.json())
     .then(data => {
         cachedData = data;
-        if (data.status === 'Expired') { btn.innerText = "Expired"; return; }
+        
+        if (data.status === 'Expired') {
+            btn.innerText = "Expired";
+            return;
+        }
 
+        // 1. Show the timer view
         toggleView('timer');
-        document.getElementById('fill').style.transform = 'translateX(0)';
+
+        // 2. RESET THE BAR (Ensure it starts at -100%)
+        fill.style.transition = 'none'; 
+        fill.style.transform = 'translateX(-100%)';
+        
+        // 3. FORCE REFLOW (The "Kick")
+        // This line makes the browser recognize the -100% position before moving
+        void fill.offsetWidth; 
+
+        // 4. START THE 10s SLIDE
+        fill.style.transition = 'transform 10s linear';
+        fill.style.transform = 'translateX(0)';
 
         let time = 10;
         const interval = setInterval(() => {
             time--;
             timerEl.innerText = time;
+
+            if (time === 8) statusEl.innerText = "Initializing secure connection...";
+            if (time === 6) statusEl.innerText = "Contacting account server...";
+            if (time === 4) statusEl.innerText = "Fetching account data...";
+            if (time === 2) statusEl.innerText = "Preparing access...";
+
             if (time <= 0) {
                 clearInterval(interval);
-                showCredentials(); // Transition to the 30s view
+                statusEl.innerText = "SUCCESS!";
+                document.getElementById('timer-status-icon').innerHTML = '<i class="fa-solid fa-circle-check"></i>';
+                
+                // Trigger the 30s view
+                setTimeout(showCredentials, 200);
             }
         }, 1000);
     })
-    .catch(() => { btn.disabled = false; btn.innerText = "Get Account"; });
+    .catch(err => {
+        console.error(err);
+        btn.disabled = false;
+        btn.innerText = "Get Account";
+    });
 }
 
 function startBtnTimer(finishTime, cooldownMs) {
@@ -232,34 +263,32 @@ function startBtnTimer(finishTime, cooldownMs) {
 async function showCredentials() {
     document.getElementById('instruction-text').classList.add('hidden');
     toggleView('creds');
-    
-    // Fill values
-    const values = document.querySelectorAll('.value');
-    values[0].innerText = cachedData.email;
-    values[1].innerText = cachedData.password;
+    fillData(cachedData);
 
-    // Start 30s Copy Window
     let timeLeft = 30;
-    const credHeader = document.querySelector('.cred-header');
-    
+    const header = document.querySelector('.cred-header');
+
     const activeWindow = setInterval(() => {
         timeLeft--;
-        credHeader.innerHTML = `Credentials Unlocked <span style="float:right; color:#ef4444">${timeLeft}s</span>`;
+        header.innerHTML = `Credentials Unlocked <span style="float:right; color:#ef4444; font-weight:800;">${timeLeft}s</span>`;
 
         if (timeLeft <= 0) {
             clearInterval(activeWindow);
             
-            // NOW we set the 60s cooldown in localStorage
+            // Set 60s cooldown now
             const finishTime = Date.now();
             localStorage.setItem(COOLDOWN_KEY, finishTime);
             
-            // Go back to start and lock button
             toggleView('initial');
             document.getElementById('instruction-text').classList.remove('hidden');
-            startBtnTimer(finishTime, 60000);
+            
+            // Re-use your existing 60s button timer
+            const remaining = 60;
+            startBtnTimer(remaining); 
         }
     }, 1000);
 }
+     
 function fillData(data) {
     const values = document.querySelectorAll('.value');
     values[0].innerText = data.email;
