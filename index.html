@@ -159,11 +159,19 @@ const token = urlParams.get('token');
 const API_URL = `/api/get-creds?token=${token}`;
 const COOLDOWN_KEY = `finished_${token}`;
 
-// 1. On Load: Check if 60s cooldown is active
 window.onload = () => {
+    const sessionActive = localStorage.getItem('session_active');
     const finishTime = localStorage.getItem(COOLDOWN_KEY);
     const now = Date.now();
     const cooldownMs = 60000; 
+
+    if (sessionActive === 'true') {
+        const penaltyTime = Date.now();
+        localStorage.setItem(COOLDOWN_KEY, penaltyTime);
+        localStorage.removeItem('session_active');
+        startBtnTimer(penaltyTime, cooldownMs);
+        return;
+    }
 
     if (finishTime && (now - finishTime < cooldownMs)) {
         startBtnTimer(finishTime, cooldownMs);
@@ -204,7 +212,6 @@ function startUnlock() {
         
         void fill.offsetWidth; 
 
-        // 4. START THE 10s SLIDE
         fill.style.transition = 'transform 10s linear';
         fill.style.transform = 'translateX(0)';
 
@@ -250,7 +257,6 @@ function startBtnTimer(finishTime, cooldownMs) {
             btn.style.opacity = "1";
             localStorage.removeItem(COOLDOWN_KEY);
         } else {
-            // 'remaining' is now a valid number, so no more NaNs
             btn.innerText = `Wait ${remaining}s`;
         }
     }, 1000);
@@ -261,34 +267,34 @@ async function showCredentials() {
     toggleView('creds');
     fillData(cachedData);
 
+    localStorage.setItem('session_active', 'true');
+
     let timeLeft = 30;
     const credsView = document.getElementById('view-creds');
-    
     const header = document.querySelector('.cred-header');
-    header.innerHTML = `Credentials`;
+
+    header.style.cssText = "font-size: 14px; font-weight: 600; color: #cbd5e1; text-transform: uppercase; margin-bottom: 12px;";
+    header.innerHTML = `CREDENTIALS`;
 
     if (!document.getElementById('hurry-timer')) {
         const warning = document.createElement('div');
         warning.id = 'hurry-timer';
-        warning.style.cssText = "color:#e11d48; font-size:13px; font-weight:800; margin-top:15px; text-align:center; width:100%;";
+        warning.style.cssText = "color:#50946e; font-size:10px; font-weight:900; margin-top:15px; text-align:center; width:100%;";
         warning.innerHTML = `You have only <span id="live-seconds">30</span> seconds, hurry up!`;
         credsView.appendChild(warning);
     }
 
     const activeWindow = setInterval(() => {
         timeLeft--;
-        
         const liveSecs = document.getElementById('live-seconds');
         if (liveSecs) liveSecs.innerText = timeLeft;
 
         if (timeLeft <= 0) {
             clearInterval(activeWindow);
             
-            const msg = document.getElementById('hurry-timer');
-            if (msg) msg.remove();
-
             const finishTime = Date.now();
             localStorage.setItem(COOLDOWN_KEY, finishTime);
+            localStorage.removeItem('session_active');
             
             toggleView('initial');
             document.getElementById('instruction-text').classList.remove('hidden');
