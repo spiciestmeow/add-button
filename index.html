@@ -154,7 +154,6 @@
 let cachedData = null;
 let isDataReady = false;
 
-// ✅ Get token from iframe URL, not hardcoded
 const urlParams = new URLSearchParams(window.location.search);
 const token = urlParams.get('token');
 const API_URL = `/api/get-creds?token=${token}`;
@@ -173,7 +172,6 @@ function startUnlock() {
     const icon = document.getElementById('timer-status-icon');
     const timerEl = document.getElementById('timer-num');
 
-    // Prefetch data first
     fetch(API_URL)
     .then(res => res.json())
     .then(data => {
@@ -181,18 +179,16 @@ function startUnlock() {
         isDataReady = true;
 
       if (data.status === 'Expired') {
-          // Disable button and change its text
           btn.disabled = true;
           btn.style.cursor = 'not-allowed';
           btn.style.opacity = 0.6;
-          btn.innerText = "Expired"; // ← Change text here
+          btn.innerText = "Expired";
           
           statusEl.innerText = "Account Expired";
           icon.innerHTML = '<i class="fa-solid fa-circle-xmark"></i>';
-          return; // stop further execution
+          return;
       }
 
-        // ✅ Only run timer if account is available
         toggleView('timer');
         document.getElementById('instruction-text').classList.remove('hidden');
 
