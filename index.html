@@ -158,6 +158,21 @@ const urlParams = new URLSearchParams(window.location.search);
 const token = urlParams.get('token');
 const API_URL = `/api/get-creds?token=${token}`;
 
+// Unique key for this specific token to track the 60s cooldown
+const COOLDOWN_KEY = `last_click_${token}`;
+
+// RUNS AUTOMATICALLY ON PAGE LOAD
+window.onload = () => {
+    const lastClick = localStorage.getItem(COOLDOWN_KEY);
+    const now = Date.now();
+    const cooldownMs = 60000; // 60 seconds
+
+    if (lastClick && (now - lastClick < cooldownMs)) {
+        const remaining = Math.ceil((cooldownMs - (now - lastClick)) / 1000);
+        startBtnTimer(remaining);
+    }
+};
+
 const messages = [
     "Initializing secure connection...",
     "Contacting account server...",
@@ -172,52 +187,72 @@ function startUnlock() {
     const icon = document.getElementById('timer-status-icon');
     const timerEl = document.getElementById('timer-num');
 
+    // 1. Set the Lock in LocalStorage immediately
+    localStorage.setItem(COOLDOWN_KEY, Date.now());
+    
+    // 2. Start the 60s button countdown UI
+    startBtnTimer(60);
+
+    // 3. Fire the Make.com Webhook
     fetch(API_URL)
     .then(res => res.json())
     .then(data => {
         cachedData = data;
-        isDataReady = true;
+        
+        if (data.status === 'Expired') {
+            btn.innerText = "Expired";
+            btn.disabled = true;
+            return;
+        }
 
-      if (data.status === 'Expired') {
-          btn.disabled = true;
-          btn.style.cursor = 'not-allowed';
-          btn.style.opacity = 0.6;
-          btn.innerText = "Expired";
-          
-          statusEl.innerText = "Account Expired";
-          icon.innerHTML = '<i class="fa-solid fa-circle-xmark"></i>';
-          return;
-      }
-
+        // 4. Start the 10s "Fake Loading" Animation
         toggleView('timer');
-        document.getElementById('instruction-text').classList.remove('hidden');
-
         setTimeout(() => document.getElementById('fill').style.transform = 'translateX(0)', 50);
 
-        let time = 10;
-        const interval = setInterval(() => {
-            time--;
-            timerEl.innerText = time;
+        let decryptTime = 10;
+        const decryptInterval = setInterval(() => {
+            decryptTime--;
+            timerEl.innerText = decryptTime;
 
-            if (time === 8) statusEl.innerText = "Initializing secure connection...";
-            if (time === 6) statusEl.innerText = "Contacting account server...";
-            if (time === 4) statusEl.innerText = "Fetching account data...";
-            if (time === 2) statusEl.innerText = "Preparing access...";
+            if (decryptTime === 8) statusEl.innerText = "Initializing secure connection...";
+            if (decryptTime === 6) statusEl.innerText = "Contacting account server...";
+            if (decryptTime === 4) statusEl.innerText = "Fetching account data...";
+            if (decryptTime === 2) statusEl.innerText = "Preparing access...";
 
-            if (time <= 0) {
-                clearInterval(interval);
+            if (decryptTime <= 0) {
+                clearInterval(decryptInterval);
                 statusEl.innerText = "SUCCESS!";
                 icon.innerHTML = '<i class="fa-solid fa-circle-check"></i>';
                 setTimeout(showCredentials, 200);
             }
         }, 1000);
-
     })
     .catch(err => {
         console.error(err);
-        statusEl.innerText = "Network Error";
-        icon.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i>';
+        localStorage.removeItem(COOLDOWN_KEY); // Reset on error so they can try again
+        alert("Connection failed. Please try again.");
     });
+}
+
+// Helper function to handle the 60s button countdown
+function startBtnTimer(seconds) {
+    const btn = document.querySelector('.btn');
+    btn.disabled = true;
+    btn.style.opacity = "0.6";
+    btn.innerText = `Wait ${seconds}s`;
+
+    const timer = setInterval(() => {
+        seconds--;
+        if (seconds <= 0) {
+            clearInterval(timer);
+            btn.disabled = false;
+            btn.innerText = "Get Account";
+            btn.style.opacity = "1";
+            // Optional: Don't remove from localStorage until they actually click again
+        } else {
+            btn.innerText = `Wait ${seconds}s`;
+        }
+    }, 1000);
 }
 
 async function showCredentials() {
