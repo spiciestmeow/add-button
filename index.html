@@ -157,19 +157,37 @@ let isDataReady = false;
 const urlParams = new URLSearchParams(window.location.search);
 const token = urlParams.get('token');
 const API_URL = `/api/get-creds?token=${token}`;
+const COOLDOWN_KEY = `finished_${token}`;
 
-// Unique key for this specific token to track the 60s cooldown
-const COOLDOWN_KEY = `last_click_${token}`;
-
-// RUNS AUTOMATICALLY ON PAGE LOAD
+// 1. On Load: ONLY trigger the 60s wait if they already finished the process recently
 window.onload = () => {
-    const lastClick = localStorage.getItem(COOLDOWN_KEY);
+    const finishTime = localStorage.getItem(COOLDOWN_KEY);
     const now = Date.now();
-    const cooldownMs = 60000; // 60 seconds
+    const cooldownMs = 60000; 
 
-    if (lastClick && (now - lastClick < cooldownMs)) {
-        const remaining = Math.ceil((cooldownMs - (now - lastClick)) / 1000);
-        startBtnTimer(remaining);
+    if (finishTime && (now - finishTime < cooldownMs)) {
+        const remaining = Math.ceil((cooldownMs - (now - finishTime)) / 1000);
+        
+        // Lock the button and show the countdown
+        const btn = document.querySelector('.btn');
+        btn.disabled = true;
+        btn.style.opacity = "0.6";
+        btn.innerText = `Wait ${remaining}s`;
+
+        const refreshTimer = setInterval(() => {
+            const currentNow = Date.now();
+            const currentRemaining = Math.ceil((cooldownMs - (currentNow - finishTime)) / 1000);
+            
+            if (currentRemaining <= 0) {
+                clearInterval(refreshTimer);
+                btn.disabled = false;
+                btn.innerText = "Get Account";
+                btn.style.opacity = "1";
+                localStorage.removeItem(COOLDOWN_KEY);
+            } else {
+                btn.innerText = `Wait ${currentRemaining}s`;
+            }
+        }, 1000);
     }
 };
 
@@ -187,13 +205,10 @@ function startUnlock() {
     const icon = document.getElementById('timer-status-icon');
     const timerEl = document.getElementById('timer-num');
 
-    // 1. Set the Lock in LocalStorage immediately
-    localStorage.setItem(COOLDOWN_KEY, Date.now());
-    
-    // 2. Start the 60s button countdown UI
-    startBtnTimer(60);
+    // Prevent double-clicking while the 10s timer is active
+    btn.disabled = true;
+    btn.innerText = "Processing...";
 
-    // 3. Fire the Make.com Webhook
     fetch(API_URL)
     .then(res => res.json())
     .then(data => {
@@ -201,36 +216,39 @@ function startUnlock() {
         
         if (data.status === 'Expired') {
             btn.innerText = "Expired";
-            btn.disabled = true;
             return;
         }
 
-        // 4. Start the 10s "Fake Loading" Animation
+        // --- START YOUR 10s TIMER ---
         toggleView('timer');
         setTimeout(() => document.getElementById('fill').style.transform = 'translateX(0)', 50);
 
-        let decryptTime = 10;
-        const decryptInterval = setInterval(() => {
-            decryptTime--;
-            timerEl.innerText = decryptTime;
+        let time = 10;
+        const interval = setInterval(() => {
+            time--;
+            timerEl.innerText = time;
 
-            if (decryptTime === 8) statusEl.innerText = "Initializing secure connection...";
-            if (decryptTime === 6) statusEl.innerText = "Contacting account server...";
-            if (decryptTime === 4) statusEl.innerText = "Fetching account data...";
-            if (decryptTime === 2) statusEl.innerText = "Preparing access...";
+            if (time === 8) statusEl.innerText = "Initializing secure connection...";
+            if (time === 6) statusEl.innerText = "Contacting account server...";
+            if (time === 4) statusEl.innerText = "Fetching account data...";
+            if (time === 2) statusEl.innerText = "Preparing access...";
 
-            if (decryptTime <= 0) {
-                clearInterval(decryptInterval);
+            if (time <= 0) {
+                clearInterval(interval);
                 statusEl.innerText = "SUCCESS!";
                 icon.innerHTML = '<i class="fa-solid fa-circle-check"></i>';
+                
+                // SAVE FINISH TIME: This is what triggers the cooldown ONLY on refresh
+                localStorage.setItem(COOLDOWN_KEY, Date.now());
+
                 setTimeout(showCredentials, 200);
             }
         }, 1000);
     })
     .catch(err => {
         console.error(err);
-        localStorage.removeItem(COOLDOWN_KEY); // Reset on error so they can try again
-        alert("Connection failed. Please try again.");
+        btn.disabled = false;
+        btn.innerText = "Get Account";
     });
 }
 
