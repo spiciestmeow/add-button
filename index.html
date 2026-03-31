@@ -165,6 +165,9 @@
     <button onclick="sendFeedback('not_working')" style="padding:8px 14px; border:none; border-radius:6px; cursor:pointer; background:#ef4444; color:white;">
         ❌ Not Working
     </button>
+     <div id="feedback-msg" style="margin-top:10px; font-size:12px; color:#50946E; display:none;">
+    Feedback submitted. Thank you!
+</div>
 </div>
 
 </div>
@@ -213,7 +216,11 @@ async function sendFeedback(value) {
             method: 'POST'
         });
 
-        alert("Thanks for your feedback!");
+        const msg = document.getElementById('feedback-msg');
+        if (msg) {
+            msg.style.display = 'block';
+        }
+
     } catch (err) {
         console.error(err);
     }
