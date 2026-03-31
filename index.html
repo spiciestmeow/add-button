@@ -219,6 +219,10 @@ async function sendFeedback(value) {
         const msg = document.getElementById('feedback-msg');
         if (msg) {
             msg.style.display = 'block';
+
+            setTimeout(() => {
+                msg.style.display = 'none';
+            }, 1000);
         }
 
     } catch (err) {
