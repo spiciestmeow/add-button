@@ -21,11 +21,24 @@ export default async function handler(req, res) {
 
     const userAgent = req.headers['user-agent'] || 'unknown';
 
+    // ✅ Get game_name from steamCredentials using token
+    const { data: credData, error: credError } = await supabase
+      .from('steamCredentials')
+      .select('game_name')
+      .eq('token', token)
+      .single();
+
+    if (credError) {
+      console.error('Failed to fetch game_name:', credError.message);
+    }
+
+    // ✅ Insert feedback with game_name
     const { error } = await supabase.from('feedback_logs').insert({
       ip,
       token,
       feedback,
-      user_agent: userAgent
+      user_agent: userAgent,
+      game_name: credData?.game_name || null
     });
 
     if (error) {
