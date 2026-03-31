@@ -9,6 +9,27 @@ export default async function handler(req, res) {
   try {
     const token = req.query.token;
     if (!token) return res.status(400).json({ error: 'Missing token' });
+    
+      const ip =
+      req.headers['x-forwarded-for']?.split(',')[0] ||
+      req.headers['x-real-ip'] ||
+      req.socket?.remoteAddress ||
+      'unknown';
+      
+      // ✅ Get User-Agent
+      const userAgent = req.headers['user-agent'] || 'unknown';
+      
+      // ✅ LOG EVERY ATTEMPT (with error handling)
+      const { error: logError } = await supabase.from('claim_logs').insert({
+        ip,
+        token,
+        status: 'clicked',
+        user_agent: userAgent
+      });
+      
+      if (logError) {
+        console.error('Log insert failed:', logError.message);
+      }
 
     // 1. Call the SQL function we just created to increment the view
     await supabase.rpc('increment_view', { target_token: token });
