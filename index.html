@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-
 <style>
 :root {
      --page-bg: #ffffff;
@@ -14,31 +13,42 @@
          --page-bg: #191919;
     }
 }
+
+* {
+    box-sizing: border-box; /* Critical for responsive padding */
+}
+
  body {
      background-color: var(--page-bg);
-     height: 100vh;
+     min-height: 100vh;
      display: flex;
      justify-content: center;
      align-items: center;
      font-family: system-ui, sans-serif;
      margin: 0;
+     padding: 15px; /* Keeps card from touching screen edges on mobile */
 }
+
  .card {
      background: #f8fafc;
      border: 1px solid #e2e8f0;
      border-radius: 12px;
-     padding: 30px 40px;
-     width: 340px;
+     padding: 30px 5%; /* Percentage padding for internal scaling */
+     width: 100%; 
+     max-width: 340px; /* Limits desktop size to your original design */
      text-align: center;
 }
+
  .hidden {
      display: none !important;
 }
+
  .instruction {
      color: #64748b;
      font-size: 14px;
      margin-bottom: 20px;
 }
+
  .btn {
      background: #50946E;
      color: #fff;
@@ -47,34 +57,42 @@
      border-radius: 10px;
      font-weight: 600;
      cursor: pointer;
+     max-width: 100%; /* Prevents overflow */
 }
+
  .btn:active {
      transform: scale(0.98);
 }
+
 /* Timer */
  .timer-icon {
      color: #50946E;
      font-size: 20px;
      margin-bottom: 8px;
 }
+
  .timer-label {
      color: #64748b;
      font-size: 12px;
      font-weight: 600;
      text-transform: uppercase;
 }
+
  .countdown-text {
      font-size: 32px;
      font-weight: 700;
      margin: 5px 0;
 }
+
  .progress-bar {
      height: 3px;
      background: #e2e8f0;
-     width: 60%;
+     width: 80%; /* Increased for better mobile visibility */
+     max-width: 200px;
      margin: 15px auto 0;
      overflow: hidden;
 }
+
  .progress-fill {
      height: 100%;
      background: #50946E;
@@ -82,6 +100,7 @@
      transform: translateX(-100%);
      transition: transform 10s linear;
 }
+
 /* Credentials */
  .cred-header {
      text-align: left;
@@ -90,6 +109,7 @@
      color: #94a3b8;
      margin-bottom: 12px;
 }
+
  .cred-box {
      background: #f1f5f9;
      padding: 12px 15px;
@@ -98,16 +118,22 @@
      text-align: left;
      position: relative;
      cursor: pointer;
+     width: 100%;
+     word-wrap: break-word; /* Prevents long emails from breaking the box */
 }
+
  .label {
      font-size: 9px;
      color: #94a3b8;
      font-weight: 700;
 }
+
  .value {
      font-size: 14px;
      font-family: monospace;
+     padding-right: 25px; /* Ensures text doesn't overlap copy icon */
 }
+
  .copy-icon {
      position: absolute;
      right: 15px;
@@ -115,61 +141,74 @@
      transform: translateY(-50%);
      color: #cbd5e1;
 }
+
+/* Feedback Layout Scaling */
+.feedback-container {
+    width: 100%;
+    max-width: 340px;
+    text-align: center;
+}
+
+.feedback-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap; /* Wraps buttons on extremely narrow screens */
+}
  </style>
 </head>
 <body>
-  
-<div style="display: flex; flex-direction: column; align-items: center; gap: 15px;">
-    
+<div style="display: flex; flex-direction: column; align-items: center; gap: 15px; width: 100%;">
+    <div class="card">
+        <p id="instruction-text" class="instruction">Click below to unlock account details</p>
 
-
-<div class="card">
-    <p id="instruction-text" class="instruction">Click below to unlock account details</p>
-
-    <div id="view-initial">
-        <button class="btn" onclick="startUnlock()">Get Account</button>
-    </div>
-
-    <div id="view-timer" class="hidden">
-        <div id="timer-status-icon" class="timer-icon"><i class="fa-regular fa-clock"></i></div>
-        <div id="status-text" class="timer-label">Initializing...</div>
-        <div id="timer-num" class="countdown-text">10</div>
-        <div class="progress-bar"><div id="fill" class="progress-fill"></div></div>
-    </div>
-
-    <div id="view-creds" class="hidden">
-        <div class="cred-header">Credentials Unlocked</div>
-
-        <div class="cred-box" onclick="smartCopy(this)">
-            <div class="label">Email / User</div>
-            <div class="value">Loading...</div>
-            <i class="fa-regular fa-copy copy-icon"></i>
+        <div id="view-initial">
+            <button class="btn" onclick="startUnlock()">Get Account</button>
         </div>
 
-        <div class="cred-box" onclick="smartCopy(this)">
-            <div class="label">Password</div>
-            <div class="value">Loading...</div>
-            <i class="fa-regular fa-copy copy-icon"></i>
+        <div id="view-timer" class="hidden">
+            <div id="timer-status-icon" class="timer-icon"><i class="fa-regular fa-clock"></i></div>
+            <div id="status-text" class="timer-label">Initializing...</div>
+            <div id="timer-num" class="countdown-text">10</div>
+            <div class="progress-bar"><div id="fill" class="progress-fill"></div></div>
+        </div>
+
+        <div id="view-creds" class="hidden">
+            <div class="cred-header">Credentials Unlocked</div>
+
+            <div class="cred-box" onclick="smartCopy(this)">
+                <div class="label">Email / User</div>
+                <div class="value">Loading...</div>
+                <i class="fa-regular fa-copy copy-icon"></i>
+            </div>
+
+            <div class="cred-box" onclick="smartCopy(this)">
+                <div class="label">Password</div>
+                <div class="value">Loading...</div>
+                <i class="fa-regular fa-copy copy-icon"></i>
+            </div>
         </div>
     </div>
-</div>
-<div style="text-align: center;">
-    <p style="font-size: 12px; color: #64748b; margin-bottom: 10px;">
-        Was this account working for you?
-    </p>
 
-    <button onclick="sendFeedback('working')" style="margin-right:10px; padding:8px 14px; border:none; border-radius:6px; cursor:pointer; background:#22c55e; color:white;">
-        ✅ Working
-    </button>
+    <div class="feedback-container">
+        <p style="font-size: 12px; color: #64748b; margin-bottom: 10px;">
+            Was this account working for you?
+        </p>
 
-    <button onclick="sendFeedback('not_working')" style="padding:8px 14px; border:none; border-radius:6px; cursor:pointer; background:#ef4444; color:white;">
-        ❌ Not Working
-    </button>
-     <div id="feedback-msg" style="margin-top:10px; font-size:12px; color:#50946E; display:none;">
-    Feedback submitted. Thank you!
-</div>
-</div>
+        <div class="feedback-buttons">
+            <button onclick="sendFeedback('working')" style="padding:8px 14px; border:none; border-radius:6px; cursor:pointer; background:#22c55e; color:white; flex: 1; max-width: 120px;">
+                <i class="fa-solid fa-check"></i> Working
+            </button>
 
+            <button onclick="sendFeedback('not_working')" style="padding:8px 14px; border:none; border-radius:6px; cursor:pointer; background:#ef4444; color:white; flex: 1; max-width: 120px;">
+                <i class="fa-solid fa-xmark"></i> Not Working
+            </button>
+        </div>
+        
+        <div id="feedback-msg" style="margin-top:10px; font-size:12px; color:#50946E; display:none;">
+            Feedback submitted. Thank you!
+        </div>
+    </div>
 </div>
 
 <script>
