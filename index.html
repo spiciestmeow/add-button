@@ -15,7 +15,7 @@
 }
 
 * {
-    box-sizing: border-box; /* Critical for responsive padding */
+    box-sizing: border-box;
 }
 
  body {
@@ -26,16 +26,16 @@
      align-items: center;
      font-family: system-ui, sans-serif;
      margin: 0;
-     padding: 15px; /* Keeps card from touching screen edges on mobile */
+     padding: 15px;
 }
 
  .card {
      background: #f8fafc;
      border: 1px solid #e2e8f0;
      border-radius: 12px;
-     padding: 30px 5%; /* Percentage padding for internal scaling */
+     padding: 30px 5%;
      width: 100%; 
-     max-width: 340px; /* Limits desktop size to your original design */
+     max-width: 340px;
      text-align: center;
 }
 
@@ -57,7 +57,7 @@
      border-radius: 10px;
      font-weight: 600;
      cursor: pointer;
-     max-width: 100%; /* Prevents overflow */
+     max-width: 100%;
 }
 
  .btn:active {
@@ -87,7 +87,7 @@
  .progress-bar {
      height: 3px;
      background: #e2e8f0;
-     width: 80%; /* Increased for better mobile visibility */
+     width: 80%;
      max-width: 200px;
      margin: 15px auto 0;
      overflow: hidden;
@@ -119,7 +119,7 @@
      position: relative;
      cursor: pointer;
      width: 100%;
-     word-wrap: break-word; /* Prevents long emails from breaking the box */
+     word-wrap: break-word;
 }
 
  .label {
@@ -131,7 +131,7 @@
  .value {
      font-size: 14px;
      font-family: monospace;
-     padding-right: 25px; /* Ensures text doesn't overlap copy icon */
+     padding-right: 25px;
 }
 
  .copy-icon {
@@ -143,6 +143,12 @@
 }
 
 /* Updated Feedback Button Styles */
+.feedback-container {
+    width: 100%;
+    max-width: 340px;
+    text-align: center;
+    margin: 0 auto;
+}
 .feedback-btn {
     position: relative;
     padding: 8px 14px;
@@ -152,7 +158,7 @@
     color: white;
     flex: 1;
     max-width: 120px;
-    overflow: hidden; /* Keeps the progress bar inside the button */
+    overflow: hidden;
     transition: transform 0.1s;
 }
 
@@ -162,7 +168,7 @@
 
 .feedback-btn span {
     position: relative;
-    z-index: 2; /* Keeps text above the loading bar */
+    z-index: 2;
 }
 
 /* The loading bar effect */
@@ -173,7 +179,7 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.2); /* Darker overlay for the loading look */
+    background: rgba(0, 0, 0, 0.2);
     transform: translateX(-100%);
     z-index: 1;
 }
@@ -242,8 +248,8 @@
             </button>
         </div>
         
-        <div id="feedback-msg" style="margin-top:10px; font-size:12px; color:#50946E; display:none;">
-            Feedback submitted. Thank you!
+        <div id="feedback-msg" style="margin-top: 15px; font-size: 13px; font-weight: 600; color: #50946E; display: none;">
+             Feedback submitted. Thank you!
         </div>
     </div>
 </div>
