@@ -142,18 +142,55 @@
      color: #cbd5e1;
 }
 
-/* Feedback Layout Scaling */
-.feedback-container {
-    width: 100%;
-    max-width: 340px;
-    text-align: center;
+/* Updated Feedback Button Styles */
+.feedback-btn {
+    position: relative;
+    padding: 8px 14px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    color: white;
+    flex: 1;
+    max-width: 120px;
+    overflow: hidden; /* Keeps the progress bar inside the button */
+    transition: transform 0.1s;
 }
 
-.feedback-buttons {
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-    flex-wrap: wrap; /* Wraps buttons on extremely narrow screens */
+.feedback-btn:active {
+    transform: scale(0.95);
+}
+
+.feedback-btn span {
+    position: relative;
+    z-index: 2; /* Keeps text above the loading bar */
+}
+
+/* The loading bar effect */
+.feedback-btn::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.2); /* Darker overlay for the loading look */
+    transform: translateX(-100%);
+    z-index: 1;
+}
+
+/* Class to trigger animation */
+.feedback-btn.loading::after {
+    transform: translateX(0);
+    transition: transform 1.5s ease-in-out;
+}
+
+/* Specific colors for your buttons */
+.btn-green { background: #22c55e; }
+.btn-red { background: #ef4444; }
+
+.feedback-btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.8;
 }
  </style>
 </head>
@@ -196,12 +233,12 @@
         </p>
 
         <div class="feedback-buttons">
-            <button onclick="sendFeedback('working')" style="padding:8px 14px; border:none; border-radius:6px; cursor:pointer; background:#22c55e; color:white; flex: 1; max-width: 120px;">
-                <i class="fa-solid fa-check"></i> Working
+            <button id="btn-working" class="feedback-btn btn-green" onclick="sendFeedback('working')">
+                <span><i class="fa-solid fa-check"></i> Working</span>
             </button>
-
-            <button onclick="sendFeedback('not_working')" style="padding:8px 14px; border:none; border-radius:6px; cursor:pointer; background:#ef4444; color:white; flex: 1; max-width: 120px;">
-                <i class="fa-solid fa-xmark"></i> Not Working
+        
+            <button id="btn-not-working" class="feedback-btn btn-red" onclick="sendFeedback('not_working')">
+                <span><i class="fa-solid fa-xmark"></i> Not Working</span>
             </button>
         </div>
         
@@ -248,24 +285,42 @@ const messages = [
 ];
 
 async function sendFeedback(value) {
+    const btnWorking = document.getElementById('btn-working');
+    const btnNotWorking = document.getElementById('btn-not-working');
+    const activeBtn = value === 'working' ? btnWorking : btnNotWorking;
+
     try {
         if (!token) return;
 
-        await fetch(`/api/feedback?token=${token}&feedback=${value}`, {
-            method: 'POST'
-        });
+        // Disable buttons and start animation
+        btnWorking.disabled = true;
+        btnNotWorking.disabled = true;
+        activeBtn.classList.add('loading');
+
+        // Simultaneous API call and animation wait
+        // We use a small delay so the user actually sees the bar fill up
+        await Promise.all([
+            fetch(`/api/feedback?token=${token}&feedback=${value}`, { method: 'POST' }),
+            new Promise(resolve => setTimeout(resolve, 1500)) 
+        ]);
 
         const msg = document.getElementById('feedback-msg');
         if (msg) {
             msg.style.display = 'block';
-
             setTimeout(() => {
                 msg.style.display = 'none';
-            }, 1000);
+                // Reset state
+                activeBtn.classList.remove('loading');
+                btnWorking.disabled = false;
+                btnNotWorking.disabled = false;
+            }, 2000);
         }
 
     } catch (err) {
         console.error(err);
+        activeBtn.classList.remove('loading');
+        btnWorking.disabled = false;
+        btnNotWorking.disabled = false;
     }
 }
 
